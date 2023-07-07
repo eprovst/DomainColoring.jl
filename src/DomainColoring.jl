@@ -59,7 +59,7 @@ function shadedplot(
     x = range(axes[1], axes[2], length=pixels[1])
     y = range(axes[3], axes[4], length=pixels[2])
     shade = (f, z) -> shader(f(z); kwargs...)
-    image(x, y, @. shade(f, x + im*y'); axis=(autolimitaspect=1,));
+    image(x, y, @. shade(f, x + im*y'); axis=(aspect=DataAspect(),));
 end
 
 """
