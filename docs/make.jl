@@ -8,7 +8,10 @@ makedocs(
     "Library" => [
       "lib/public.md",
       "lib/internals.md",
-    ]
+    ],
+    "Design Choices" => [
+      "design/phasewheel.md",
+    ],
   ]
 )
 

@@ -62,6 +62,26 @@ function shadedplot(
     image(x, y, @. shade(f, x + im*y'); axis=(autolimitaspect=1,));
 end
 
+"""
+    DomainColoring.labsweep(θ)
+
+Maps a phase angle **`θ`** to a color in CIE L\\*a\\*b\\* space by
+taking
+
+```math
+\\begin{aligned}
+    L^* &= 12 \\cos(3\\theta - \\pi) + 67,\\\\
+    a^* &= 46 \\cos(\\theta + .4) - 3,\\quad\\text{and}\\\\
+    b^* &= 46 \\sin(\\theta + .4) - 16.
+\\end{aligned}
+```
+
+See [The Phase Wheel](@ref) for more information.
+"""
+function labsweep(θ)
+    θ = mod(θ, 2π)
+    Lab(12cos(3θ - π) + 67, 46cos(θ + .4) - 3, 46sin(θ + .4) + 16)
+end
 
 """
     DomainColoring.domaincolorshader(
@@ -86,10 +106,8 @@ function domaincolorshader(
     all && (abs = true; grid = true)
     logabs && (abs = true)
 
-    a = mod(angle(w), 2π)
-
-    # phase color using a custom sweep through CIE Lab space
-    c = Lab(12cos(3a - π) + 67, 46cos(a + .4) - 3, 46sin(a + .4) + 16)
+    # phase color
+    c = labsweep(angle(w))
 
     # add magnitude if requested
     if abs
