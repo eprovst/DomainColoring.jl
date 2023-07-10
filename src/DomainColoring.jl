@@ -12,7 +12,7 @@
 
 module DomainColoring
 
-using GLMakie, ColorTypes
+using MakieCore, ColorTypes
 
 export domaincolor, checkerplot
 
@@ -58,8 +58,8 @@ function shadedplot(
 
     x = range(axes[1], axes[2], length=pixels[1])
     y = range(axes[3], axes[4], length=pixels[2])
-    shade = (f, z) -> shader(f(z); kwargs...)
-    image(x, y, @. shade(f, x + im*y'); axis=(aspect=DataAspect(),));
+    image(x, y, @. shader(f(x + im*y'); kwargs...);
+          axis=(autolimitaspect=1,))
 end
 
 """
@@ -76,7 +76,7 @@ taking
   \\end{aligned}
 ```
 
-See [The Phase Wheel](@ref) for more information.
+See [Phase Wheel](@ref) for more information.
 """
 function labsweep(θ)
     θ = mod(θ, 2π)

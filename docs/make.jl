@@ -5,6 +5,9 @@ makedocs(
   authors = "Evert Provoost",
   pages = [
     "Home" => "index.md",
+    "Usage" => [
+      "usage/tutorial.md",
+    ],
     "Library" => [
       "lib/public.md",
       "lib/internals.md",

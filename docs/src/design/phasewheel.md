@@ -1,4 +1,4 @@
-# The Phase Wheel
+# Phase Wheel
 
 Creating a perceptually uniform color wheel is in general a difficult
 task. There has been quite some work by Peter Kovesi on this topic, much

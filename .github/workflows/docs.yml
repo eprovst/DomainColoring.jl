@@ -1,4 +1,4 @@
-name: Build documentation
+name: build documentation
 
 on:
   push:
@@ -16,17 +16,12 @@ jobs:
       - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
       - uses: julia-actions/cache@v1
-      - name: GLMakie dependencies
-        run: sudo apt-get update;
-             sudo apt-get upgrade;
-             sudo apt-get install -y cmake xorg-dev mesa-utils xvfb libgl1 freeglut3-dev
-      - name: Install dependencies
-        run: xvfb-run -s '-screen 0 1024x768x24' julia --project=docs/
+      - name: install dependencies
+        run: julia --project=docs/
                -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));
                    Pkg.instantiate()'
-      - name: Build and deploy
+      - name: build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-          GKSwstype: "100" # https://discourse.julialang.org/t/generation-of-documentation-fails-qt-qpa-xcb-could-not-connect-to-display/60988
-        run: xvfb-run -s '-screen 0 1024x768x24' julia --project=docs --color=yes docs/make.jl
+        run: julia --project=docs --color=yes docs/make.jl
