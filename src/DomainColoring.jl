@@ -29,21 +29,21 @@ Takes a complex function and a shader and produces a Makie image plot.
 
 # Arguments
 
-**`f`** is the complex function to plot.
+- **`f`** is the complex function to plot.
 
-**`shader`** is the shader function to compute pixel colors.
+- **`shader`** is the shader function to compute pixel colors.
 
-**`axes`** are the limits of the rectangle to plot, in the format
-`(min Re, max Re, min Im, max Im)`, if one or two numbers are provided
-instead they are take symmetric along the real and imaginary axis.
+- **`axes`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
 
 # Keyword Arguments
 
-**`pixels`** is the number of pixels to compute in, respectively, the
-real and imaginary axis, taking the same for both if only one number is
-provided.
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
 
-The remaining keyword arguments are passed to the **`shader`** function.
+The remaining keyword arguments are passed to the `shader` function.
 """
 function shadedplot(
         f,
@@ -70,10 +70,10 @@ taking
 
 ```math
 \\begin{aligned}
-    L^* &= 12 \\cos(3\\theta - \\pi) + 67,\\\\
-    a^* &= 46 \\cos(\\theta + .4) - 3,\\quad\\text{and}\\\\
-    b^* &= 46 \\sin(\\theta + .4) - 16.
-\\end{aligned}
+      L^* &= 12 \\cos(3\\theta - \\pi) + 67, \\\\
+      a^* &= 46 \\cos(\\theta + .4) - 3, \\quad\\text{and} \\\\
+      b^* &= 46 \\sin(\\theta + .4) - 16.
+  \\end{aligned}
 ```
 
 See [The Phase Wheel](@ref) for more information.
@@ -139,8 +139,30 @@ end
 Takes a complex function and produces it's domain coloring as a Makie
 image plot.
 
-!!! todo
-    Document arguments.
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`axes`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
+
+- **`abs`** toggles the plotting of the magnitude as lightness ramps
+  between level curves.
+
+- **`logabs`** is similar to `abs` but shows the natural logarithm of
+  the magnitude instead. This option takes precedence over `abs`.
+
+- **`grid`** plots points with integer real or imaginary part as black
+  dots.
+
+- **`all`** is a shortcut for `abs = true` and `grid = true`.
 """
 function domaincolor(
         f,
@@ -159,8 +181,8 @@ end
 """
     DomainColoring.checkerplotshader(
         w :: Complex;
-        real = true,
-        imag = true,
+        real = false,
+        imag = false,
         angle = false,
         abs = false,
         polar = false,
@@ -186,8 +208,8 @@ function checkerplotshader(
     polar && (angle = true; abs = true)
 
     g = 1.0
-    angle && (g *= sin(15Base.angle(w)))
-    abs   && (g *= sin(15log(Base.abs(w))))
+    angle && (g *= sin(16*Base.angle(w)))
+    abs   && (g *= sin(5π*log(Base.abs(w))))
     real  && (g *= sin(5π*Base.real(w)))
     imag  && (g *= sin(5π*Base.imag(w)))
 
@@ -199,8 +221,8 @@ end
         f :: Complex -> Complex,
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
-        real = true,
-        imag = true,
+        real = false,
+        imag = false,
         angle = false,
         abs = false,
         polar = false,
@@ -208,8 +230,36 @@ end
 
 Takes a complex function and produces a checker plot as a Makie image.
 
-!!! todo
-    Document arguments.
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`axes`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
+
+If none of the below options are set, the plot defaults to `real = true`
+and `imag = true`.
+
+- **`real`** plots black and white stripes orthogonal to the real axis
+  at a rate of 5 stripes per unit.
+
+- **`imag`** plots black and white stripes orthogonal to the imaginary
+  axis at a rate of 5 stripes per unit.
+
+- **`angle`** plots black and white stripes orthogonal to the phase
+  angle at a rate of 32 stripes per full rotation.
+
+- **`abs`** plots black and white stripes at a rate of 5 stripes per
+  unit increase of the natural logarithm of the magnitude.
+
+- **`phase`** is a shortcut for `angle = true` and `abs = true`.
 """
 function checkerplot(
         f,
