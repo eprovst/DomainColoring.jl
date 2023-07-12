@@ -104,13 +104,18 @@ function domaincolorpixelshader(
     if abs || logabs
         m = Base.abs(w)
         logabs && (m = log(m))
-        c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b)
+        if isfinite(m)
+            c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b)
+        end
     end
 
     # add integer grid if requested
     if grid
-        i = Base.abs(sin(π*real(w))*sin(π*imag(w)))^0.06
-        c = mapc(x -> i*x, c)
+        r, i = reim(w)
+        if isfinite(4r) && isfinite(4i)
+            it = Base.abs(sin(π*r)*sin(π*i))^0.06
+            c = mapc(x -> it*x, c)
+        end
     end
 
     return c
