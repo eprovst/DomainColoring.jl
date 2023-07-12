@@ -1,4 +1,16 @@
-module GLDomainColoring
+#==
+ = DomainColoring.jl
+ =
+ = Copyright (c) 2023 Evert Provoost. See LICENSE.
+ =
+ = Provided functionality is partially inspired by
+ =
+ =     Wegert, Elias. Visual Complex Functions:
+ =       An Introduction with Phase Portraits.
+ =       Birkhäuser Basel, 2012.
+ =#
+
+module DomainColoringToy
 
 using GLMakie
 import DomainColoring
@@ -13,10 +25,11 @@ export domaincolor, checkerplot, pdphaseplot, tphaseplot
 @doc (@doc DomainColoring.tphaseplot) tphaseplot
 
 """
-    GLDomainColoring.interactiveshadedplot(
+    DomainColoringToy.interactiveshadedplot(
         f :: "Complex -> Complex",
         shader :: "Matrix{Complex} -> Image",
         axes = (-1, 1, -1, 1),
+        pixels = (480, 480),
     )
 
 Takes a complex function and a shader and produces a GLMakie image plot
@@ -31,13 +44,22 @@ with auto updating.
 - **`axes`** are the initial limits of the plot, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  screen resolution is used.
 """
 function interactiveshadedplot(
         f,
         shader,
         axes = (-1, 1, -1, 1),
+        pixels = (480, 480),
     )
 
+    # sanitize input
+    pixels == :auto && (pixels = (:auto, :auto))
+    length(pixels) == 1 && (pixels = (pixels, pixels))
     axes = DomainColoring.expandaxes(axes)
 
     # setup buffers
@@ -54,22 +76,36 @@ function interactiveshadedplot(
     xlims!(ax, axes[1], axes[2])
     ylims!(ax, axes[3], axes[4])
 
+    # keep reference to resolution
+    res = ax.scene.camera.resolution
+
     # update loop
-    function update(lims, res)
-        axes = (lims.origin[1], lims.origin[1] + lims.widths[1],
-                lims.origin[2], lims.origin[2] + lims.widths[2])
-        xl[] = axes[1]..axes[2]
-        yl[] = axes[3]..axes[4]
+    function update(lims)
+        axs = (lims.origin[1], lims.origin[1] + lims.widths[1],
+               lims.origin[2], lims.origin[2] + lims.widths[2])
+        xl[] = axs[1]..axs[2]
+        yl[] = axs[3]..axs[4]
+
+        # set resolution if requested
+        px = pixels
+        if pixels[1] == :auto
+            px = (ceil(Int, 1.2res[][1]), px[2])
+        end
+        if pixels[2] == :auto
+            px = (px[1], ceil(Int, 1.2res[][2]))
+        end
+
         img[] = DomainColoring.renderimage(
-            f, shader, axes, ceil.(Integer, 1.2 .* res)
+            f, shader, axs, px
         )
     end
 
+    # initial render
     lims = ax.finallimits
-    res = ax.scene.camera.resolution
-    update(lims[], res[])
+    update(lims[])
 
-    onany(update, lims, res)
+    # observe the limits
+    on(update, lims)
 
     return fg
 end
@@ -77,6 +113,7 @@ end
 function domaincolor(
         f,
         axes = (-1, 1, -1, 1);
+        pixels = (480, 480),
         abs = false,
         logabs = false,
         grid = false,
@@ -89,27 +126,36 @@ function domaincolor(
             W; abs, logabs, grid, all
         ),
         axes,
+        pixels,
     )
 end
 
 function pdphaseplot(
         f,
-        axes = (-1, 1, -1, 1),
+        axes = (-1, 1, -1, 1);
+        pixels = (480, 480),
     )
-    interactiveshadedplot(f, DomainColoring.pdphaseplotshader, axes)
+
+    interactiveshadedplot(
+        f, DomainColoring.pdphaseplotshader, axes, pixels
+    )
 end
 
 function tphaseplot(
         f,
-        axes = (-1, 1, -1, 1),
+        axes = (-1, 1, -1, 1);
+        pixels = (480, 480),
     )
 
-    interactiveshadedplot(f, DomainColoring.tphaseplotshader, axes)
+    interactiveshadedplot(
+        f, DomainColoring.tphaseplotshader, axes, pixels
+    )
 end
 
 function checkerplot(
         f,
         axes = (-1, 1, -1, 1);
+        pixels = (480, 480),
         real = false,
         imag = false,
         rect = false,
@@ -124,6 +170,7 @@ function checkerplot(
             W; real, imag, rect, angle, abs, polar
         ),
         axes,
+        pixels,
     )
 end
 
