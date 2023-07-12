@@ -19,10 +19,9 @@ export domaincolor, checkerplot, pdphaseplot, tphaseplot
 """
     DomainColoring.shadedplot(
         f :: "Complex -> Complex",
-        shader :: "(Matrix{Complex}; kwargs...) -> Image",
+        shader :: "Matrix{Complex} -> Image",
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
-        kwargs...
     )
 
 Takes a complex function and a shader and produces a Makie image plot.
