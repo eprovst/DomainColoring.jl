@@ -18,8 +18,8 @@ export domaincolor, checkerplot
 
 """
     DomainColoring.shadedplot(
-        f :: Complex -> Complex,
-        shader :: (Complex; kwargs...) -> Color,
+        f :: "Complex -> Complex",
+        shader :: "(Complex; kwargs...) -> Color",
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
         kwargs...
@@ -127,7 +127,7 @@ end
 
 """
     domaincolor(
-        f :: Complex -> Complex,
+        f :: "Complex -> Complex",
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
         abs = false,
@@ -218,7 +218,7 @@ end
 
 """
     checkerplot(
-        f :: Complex -> Complex,
+        f :: "Complex -> Complex",
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
         real = false,

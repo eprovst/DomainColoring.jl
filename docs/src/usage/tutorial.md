@@ -89,10 +89,10 @@ We've now looked at poles and zeroes, another interesting effect to see
 on a phase plot are
 [branch cuts](https://en.wikipedia.org/wiki/Branch_point). Julia's
 implementation of the square root has a branch cut on the negative real
-axis, as we can see on
+axis, as we can see on the following figure.
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(sqrt, [-10, 1, -2, 2])
+domaincolor(sqrt, [-10, 2, -2, 2])
 save("sqrtexample.png", current_figure()) # hide
 nothing # hide
 ```
@@ -101,7 +101,7 @@ nothing # hide
 There are a couple of things of note here. First, Julia allows us to
 simply pass `sqrt`, which here is equivalent to `z -> sqrt(z)`. Second,
 `domaincolor` accepts axis limits as an optional second argument
-(for those familiar with Julia, any indexable object will work).
+(for those familiar with Julia: any indexable object will work).
 Finally, branch cuts give discontinuities in the phase plot (identifying
 these is greatly helped by the perceptual uniformity of the
 [Phase Wheel](@ref) used).
@@ -123,13 +123,13 @@ nothing # hide
 ## Plotting the `DomainColoring.jl` logo
 
 As a final example, let us show off a few more capabilities of the
-`domaincolor` function by plotting the `DomainColoring.jl` logo.
+[`domaincolor`](@ref) function by plotting the `DomainColoring.jl` logo.
 
 This is a plot of ``f(z) = z^3i - 1`` with level curves of the logarithm
 of the magnitude and an integer grid. You can continue by reading the
 [Public Interface](@ref) documentation to learn more about these and
 other additional options, and the other provided plotting function
-`checkerplot`.
+[`checkerplot`](@ref).
 
 ```@example
 using CairoMakie, DomainColoring # hide
