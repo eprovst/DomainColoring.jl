@@ -2,8 +2,8 @@
 
 !!! note
     If you're experienced with Julia and phase plots, this document
-    might be fairly basic. Continue to the [Public Interface](@ref)
-    documentation instead.
+    might be fairly basic. Continue to the [General Overview](@ref)
+    instead.
 
 ## Installation, loading and Makie
 
@@ -127,9 +127,8 @@ As a final example, let us show off a few more capabilities of the
 
 This is a plot of ``f(z) = z^3i - 1`` with level curves of the logarithm
 of the magnitude and an integer grid. You can continue by reading the
-[Public Interface](@ref) documentation to learn more about these and
-other additional options, and the other provided plotting function
-[`checkerplot`](@ref).
+[General Overview](@ref) to learn more about these and other additional
+options, and the other provided plotting function [`checkerplot`](@ref).
 
 ```@example
 using CairoMakie, DomainColoring # hide
