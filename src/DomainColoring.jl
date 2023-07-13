@@ -17,44 +17,86 @@ using MakieCore, ColorTypes, ColorSchemes
 export domaincolor, checkerplot, pdphaseplot, tphaseplot
 
 """
-    DomainColoring.shadedplot(
-        f :: "Complex -> Complex",
-        shader :: "Matrix{Complex} -> Image",
-        axes = (-1, 1, -1, 1);
-        pixels = (720, 720),
-    )
+    DomainColoring.expandaxes(axes)
 
-Takes a complex function and a shader and produces a Makie image plot.
+Implements the **`axes`** expansion typical of the functions in this
+module, additionally normalizes to tuples.
 
-# Arguments
-
-- **`f`** is the complex function to plot.
-
-- **`shader`** is the shader function to compute the image.
-
-- **`axes`** are the limits of the rectangle to plot, in the format
-  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
-  instead they are take symmetric along the real and imaginary axis.
-
-# Keyword Arguments
-
-- **`pixels`** is the number of pixels to compute in, respectively, the
-  real and imaginary axis, taking the same for both if only one number
-  is provided.
+See e.g. [`renderimage`](@ref) for a description of the expansion.
 """
-function shadedplot(
+function expandaxes(axes)
+    if length(axes) == 1
+        return Float64.(tuple(-axes, axes, -axes, axes))
+    elseif length(axes) == 2
+        return Float64.(tuple(-axes[1], axes[1], -axes[2], axes[2]))
+    else
+        return Float64.(tuple(axes...))
+    end
+end
+
+"""
+    DomainColoring.renderimage(
         f,
         shader,
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
     )
-    length(axes) == 1 && (axes = (-axes, axes, -axes, axes))
-    length(axes) == 2 && (axes = (-axes[1], axes[1], -axes[2], axes[2]))
-    length(pixels) == 1 && (pixels = (pixels,pixels))
+
+# Arguments
+
+- **`f`** is the complex function to turn into an image.
+
+- **`shader`** is the shader function to compute the image.
+
+- **`axes`** are the limits of the rectangle to render, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided.
+"""
+function renderimage(
+        f,
+        shader,
+        axes = (-1, 1, -1, 1),
+        pixels = (720, 720),
+    )
+
+    axes = expandaxes(axes)
+    length(pixels) == 1 && (pixels = (pixels, pixels))
 
     x = range(axes[1], axes[2], length=pixels[1])
     y = range(axes[3], axes[4], length=pixels[2])
-    image(x, y, shader(@. f(x + im*y')); axis=(autolimitaspect=1,))
+    shader(@. f(x + im*y'))
+end
+
+"""
+    DomainColoring.shadedplot(
+        f :: "Complex -> Complex",
+        shader :: "Matrix{Complex} -> Image",
+        axes = (-1, 1, -1, 1),
+        pixels = (720, 720),
+    )
+
+Takes a complex function **`f`** and a **`shader`** and produces a Makie
+image plot.
+
+For documentation of the remaining arguments see [`renderimage`](@ref).
+"""
+function shadedplot(
+        f,
+        shader,
+        axes = (-1, 1, -1, 1),
+        pixels = (720, 720),
+    )
+
+    axes = expandaxes(axes)
+
+    x = range(axes[1], axes[2], length=2)
+    y = range(axes[3], axes[4], length=2)
+    image(x, y, renderimage(f, shader, axes, pixels);
+          axis=(autolimitaspect=1,))
 end
 
 """
@@ -96,7 +138,15 @@ function domaincolorpixelshader(
         abs = false,
         logabs = false,
         grid = false,
+        all = false,
     )
+
+    # user wants full domain coloring
+    if all
+        abs = true
+        grid = true
+    end
+
     # phase color
     c = labsweep(angle(w))
 
@@ -174,14 +224,23 @@ function domaincolor(
         all = false,
     )
 
-    if all
-        abs = true
-        grid = true
-    end
-
     shadedplot(f, W -> domaincolorpixelshader.(
                     W; abs, logabs, grid
-                  ), axes; pixels)
+                  ), axes, pixels)
+end
+
+"""
+    pdphaseplotshader(W :: Matrix{Complex})
+
+Shades a matrix **`W`** of complex values as a phase plot using
+[ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
+protanopic and deuteranopic viewers.
+
+See [pdphaseplot](@ref) for more information.
+"""
+function pdphaseplotshader(W)
+    get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
+        @. mod(-angle(W) / 2π + .5, 1))
 end
 
 """
@@ -217,11 +276,22 @@ function pdphaseplot(
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
     )
-    shader(W) = get(
-        ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
-        @. mod(-angle(W) / 2π + .5, 1)
-    )
-    shadedplot(f, shader, axes; pixels)
+
+    shadedplot(f, pdphaseplotshader, axes, pixels)
+end
+
+"""
+    tphaseplotshader(W :: Matrix{Complex})
+
+Shades a matrix **`W`** of complex values as a phase plot using
+[ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
+titranopic viewers.
+
+See [tphaseplot](@ref) for more information.
+"""
+function tphaseplotshader(W)
+    get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
+        @. mod(-angle(W) / 2π + .5, 1))
 end
 
 """
@@ -257,11 +327,8 @@ function tphaseplot(
         axes = (-1, 1, -1, 1);
         pixels = (720, 720),
     )
-    shader(W) = get(
-        ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
-        @. mod(-angle(W) / 2π + 0.5, 1)
-    )
-    shadedplot(f, shader, axes; pixels)
+
+    shadedplot(f, tphaseplotshader, axes, pixels)
 end
 
 """
@@ -269,8 +336,10 @@ end
         w :: Complex;
         real = false,
         imag = false,
+        rect = false,
         angle = false,
         abs = false,
+        polar = false,
     )
 
 Takes a complex value **`w`** and shades it as in a checker plot.
@@ -281,9 +350,29 @@ function checkerplotpixelshader(
         w;
         real = false,
         imag = false,
+        rect = false,
         angle = false,
         abs = false,
+        polar = false,
     )
+
+    # set defaults if no options given
+    if !(real || imag || rect || angle || abs || polar)
+        rect = true
+    end
+
+    # carthesian checker plot
+    if rect
+        real = true
+        imag = true
+    end
+
+    # polar checker plot
+    if polar
+        angle = true
+        abs = true
+    end
+
     g = 1.0
     real  && (g *= sin(5π*Base.real(w)))
     imag  && (g *= sin(5π*Base.imag(w)))
@@ -353,23 +442,10 @@ function checkerplot(
         abs = false,
         polar = false,
     )
-    # set defaults if no options given
-    if !(real || imag || rect || angle || abs || polar)
-        rect = true
-    end
-    # carthesian checker plot
-    if rect
-        real = true
-        imag = true
-    end
-    # polar checker plot
-    if polar
-        angle = true
-        abs = true
-    end
+
     shadedplot(f, W -> checkerplotpixelshader.(
                     W; real, imag, angle, abs
-                  ), axes; pixels)
+                  ), axes, pixels)
 end
 
 end
