@@ -225,7 +225,7 @@ function domaincolor(
     )
 
     shadedplot(f, W -> domaincolorpixelshader.(
-                    W; abs, logabs, grid
+                    W; abs, logabs, grid, all
                   ), axes, pixels)
 end
 
@@ -374,10 +374,18 @@ function checkerplotpixelshader(
     end
 
     g = 1.0
-    real  && (g *= sin(5π*Base.real(w)))
-    imag  && (g *= sin(5π*Base.imag(w)))
-    angle && (g *= sin(16*Base.angle(w)))
-    abs   && (g *= sin(5π*log(Base.abs(w))))
+    if real && isfinite(20Base.real(w))
+        g *= sin(5π*Base.real(w))
+    end
+    if imag && isfinite(20Base.imag(w))
+        g *= sin(5π*Base.imag(w))
+    end
+    if angle && isfinite(16Base.angle(w))
+        g *= sin(16Base.angle(w))
+    end
+    if abs && isfinite(20log(Base.abs(w)))
+        g *= sin(5π*log(Base.abs(w)))
+    end
 
     return Gray(0.9min(1, sign(g) + 1) + 0.08)
 end
@@ -444,7 +452,7 @@ function checkerplot(
     )
 
     shadedplot(f, W -> checkerplotpixelshader.(
-                    W; real, imag, angle, abs
+                    W; real, imag, rect, angle, abs, polar
                   ), axes, pixels)
 end
 
