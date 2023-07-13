@@ -7,6 +7,7 @@ makedocs(
     "Home" => "index.md",
     "Usage" => [
       "usage/tutorial.md",
+      "usage/cvd.md",
     ],
     "Library" => [
       "lib/public.md",

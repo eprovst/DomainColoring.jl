@@ -230,7 +230,7 @@ function domaincolor(
 end
 
 """
-    pdphaseplotshader(W :: Matrix{Complex})
+    DomainColoring.pdphaseplotshader(W :: Matrix{Complex})
 
 Shades a matrix **`W`** of complex values as a phase plot using
 [ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
@@ -281,7 +281,7 @@ function pdphaseplot(
 end
 
 """
-    tphaseplotshader(W :: Matrix{Complex})
+    DomainColoring.tphaseplotshader(W :: Matrix{Complex})
 
 Shades a matrix **`W`** of complex values as a phase plot using
 [ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
