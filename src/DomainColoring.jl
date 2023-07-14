@@ -268,7 +268,7 @@ Shades a complex value **`w`** as a phase plot using
 [ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
 protanopic and deuteranopic viewers.
 
-See [pdphaseplot](@ref) for more information.
+See [`pdphaseplot`](@ref) for more information.
 """
 function pdphaseplotshader(w)
     get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
@@ -319,7 +319,7 @@ Shades a complex value **`w`** as a phase plot using
 [ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
 titranopic viewers.
 
-See [tphaseplot](@ref) for more information.
+See [`tphaseplot`](@ref) for more information.
 """
 function tphaseplotshader(w)
     get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
@@ -435,7 +435,7 @@ end
         polar = false,
     )
 
-Takes a complex function and produces a checker plot as a Makie image.
+Takes a complex function and produces a checker plot as a Makie plot.
 
 # Arguments
 

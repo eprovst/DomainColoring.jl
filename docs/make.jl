@@ -1,4 +1,12 @@
+using Pkg
+cd(@__DIR__)
+Pkg.activate(".")
+pkg"dev .. ../DomainColoringToy"
+Pkg.instantiate()
+Pkg.precompile()
+
 using Documenter, DomainColoring
+import DomainColoringToy
 
 makedocs(
   sitename = "DomainColoring.jl",
@@ -10,10 +18,8 @@ makedocs(
       "usage/general.md",
       "usage/cvd.md",
     ],
-    "Library" => [
-      "lib/public.md",
-      "lib/internals.md",
-    ],
+    "DomainColoringToy" => "dct.md",
+    "Library" => "lib.md",
     "Design Choices" => [
       "design/phasewheel.md",
     ],

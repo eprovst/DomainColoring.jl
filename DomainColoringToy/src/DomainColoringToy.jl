@@ -1,5 +1,5 @@
 #==
- = DomainColoring.jl
+ = DomainColoringToy
  =
  = Copyright (c) 2023 Evert Provoost. See LICENSE.
  =
@@ -17,13 +17,6 @@ import DomainColoring
 
 export domaincolor, checkerplot, pdphaseplot, tphaseplot
 
-# TEMP: reuse DomainColoring docstrings
-# TODO: rewrite them as they do not line up entirely
-@doc (@doc DomainColoring.domaincolor) domaincolor
-@doc (@doc DomainColoring.checkerplot) checkerplot
-@doc (@doc DomainColoring.pdphaseplot) pdphaseplot
-@doc (@doc DomainColoring.tphaseplot) tphaseplot
-
 """
     DomainColoringToy.interactiveshadedplot(
         f :: "Complex -> Complex",
@@ -32,8 +25,8 @@ export domaincolor, checkerplot, pdphaseplot, tphaseplot
         pixels = (480, 480),
     )
 
-Takes a complex function and a shader and produces a GLMakie image plot
-with auto updating.
+Takes a complex function and a shader and produces a GLMakie plot with
+auto updating.
 
 # Arguments
 
@@ -48,7 +41,7 @@ with auto updating.
 - **`pixels`** is the size of the output in pixels, respectively, the
   number of pixels along the real and imaginary axis, taking the same
   for both if only one number is provided. If either is `:auto`, the
-  screen resolution is used.
+  viewport resolution is used.
 """
 function interactiveshadedplot(
         f,
@@ -117,6 +110,50 @@ function interactiveshadedplot(
     return fg
 end
 
+"""
+    domaincolor(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+        abs = false,
+        logabs = false,
+        grid = false,
+        all = false,
+    )
+
+Takes a complex function and produces it's domain coloring as an
+interactive GLMakie plot.
+
+Red corresponds to phase ``0``, yellow to ``\\frac{\\pi}{3}``, green
+to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
+``\\frac{4\\pi}{3}``, and magenta to ``\\frac{5\\pi}{3}``.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  viewport resolution is used.
+
+- **`abs`** toggles the plotting of the magnitude as lightness ramps
+  between level curves.
+
+- **`logabs`** is similar to `abs` but shows the natural logarithm of
+  the magnitude instead. This option takes precedence over `abs`.
+
+- **`grid`** plots points with integer real or imaginary part as black
+  dots.
+
+- **`all`** is a shortcut for `abs = true` and `grid = true`.
+"""
 function domaincolor(
         f,
         limits = (-1, 1, -1, 1);
@@ -137,6 +174,35 @@ function domaincolor(
     )
 end
 
+"""
+    pdphaseplot(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+    )
+
+Takes a complex valued function and produces a phase plot as an
+interactive GLMakie plot using [ColorCET](https://colorcet.com)'s CBC1
+cyclic color map for protanopic and deuteranopic viewers.
+
+Yellow corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, blue
+to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  viewport resolution is used.
+"""
 function pdphaseplot(
         f,
         limits = (-1, 1, -1, 1);
@@ -148,6 +214,35 @@ function pdphaseplot(
     )
 end
 
+"""
+    tphaseplot(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+    )
+
+Takes a complex valued function and produces a phase plot as an
+interactive GLMakie plot using [ColorCET](https://colorcet.com)'s CBTC1
+cyclic color map for titranopic viewers.
+
+Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
+``\\pi``, and black to ``\\frac{3\\pi}{2}``.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  viewport resolution is used.
+"""
 function tphaseplot(
         f,
         limits = (-1, 1, -1, 1);
@@ -159,6 +254,57 @@ function tphaseplot(
     )
 end
 
+"""
+    checkerplot(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+    )
+
+Takes a complex function and produces a checker plot as an interactive
+GLMakie plot.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  viewport resolution is used.
+
+If none of the below options are set, the plot defaults to `rect = true`.
+
+- **`real`** plots black and white stripes orthogonal to the real axis
+  at a rate of 5 stripes per unit.
+
+- **`imag`** plots black and white stripes orthogonal to the imaginary
+  axis at a rate of 5 stripes per unit.
+
+- **`rect`** is a shortcut for `real = true` and `imag = true`.
+
+- **`phase`** is a shortcut for `angle = true` and `abs = true`.
+
+- **`angle`** plots black and white stripes orthogonal to the phase
+  angle at a rate of 32 stripes per full rotation.
+
+- **`abs`** plots black and white stripes at a rate of 5 stripes per
+  unit increase of the natural logarithm of the magnitude.
+
+- **`phase`** is a shortcut for `angle = true` and `abs = true`.
+"""
 function checkerplot(
         f,
         limits = (-1, 1, -1, 1);
