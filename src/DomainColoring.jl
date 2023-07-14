@@ -17,28 +17,61 @@ using MakieCore, ColorTypes, ColorSchemes
 export domaincolor, checkerplot, pdphaseplot, tphaseplot
 
 """
-    DomainColoring.expandaxes(axes)
+    DomainColoring.expandlimits(limits)
 
-Implements the **`axes`** expansion typical of the functions in this
+Implements the **`limits`** expansion typical of the functions in this
 module, additionally normalizes to tuples.
 
 See e.g. [`renderimage`](@ref) for a description of the expansion.
 """
-function expandaxes(axes)
-    if length(axes) == 1
-        return Float64.(tuple(-axes, axes, -axes, axes))
-    elseif length(axes) == 2
-        return Float64.(tuple(-axes[1], axes[1], -axes[2], axes[2]))
+function expandlimits(limits)
+    if length(limits) == 1
+        return Float64.(tuple(-limits, limits, -limits, limits))
+    elseif length(limits) == 2
+        return Float64.(tuple(-limits[1], limits[1], -limits[2], limits[2]))
     else
-        return Float64.(tuple(axes...))
+        return Float64.(tuple(limits...))
     end
 end
 
 """
-    DomainColoring.renderimage(
+    DomainColoring.renderimage!(
+        out :: Matrix{<: Color},
+        f :: "Complex -> Complex",
+        shader :: "Complex -> Color",
+        limits = (-1, 1, -1, 1),
+    )
+
+# Arguments
+
+- **`out`** is the output image buffer.
+
+- **`f`** is the complex function to turn into an image.
+
+- **`shader`** is the shader function to compute a pixel.
+
+- **`limits`** are the limits of the rectangle to render, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+"""
+function renderimage!(
+        img,
         f,
         shader,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1),
+    )
+
+    limits = expandlimits(limits)
+    r = range(limits[1], limits[2], length=size(img, 2))
+    i = range(limits[4], limits[3], length=size(img, 1))
+    broadcast!((r, i) -> shader(f(r + im*i)), img, r', i)
+end
+
+"""
+    DomainColoring.renderimage(
+        f :: "Complex -> Complex",
+        shader :: "Complex -> Color",
+        limits = (-1, 1, -1, 1),
         pixels = (720, 720),
     )
 
@@ -46,9 +79,9 @@ end
 
 - **`f`** is the complex function to turn into an image.
 
-- **`shader`** is the shader function to compute the image.
+- **`shader`** is the shader function to compute a pixel.
 
-- **`axes`** are the limits of the rectangle to render, in the format
+- **`limits`** are the limits of the rectangle to render, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
 
@@ -59,44 +92,43 @@ end
 function renderimage(
         f,
         shader,
-        axes = (-1, 1, -1, 1),
+        limits = (-1, 1, -1, 1),
         pixels = (720, 720),
     )
 
-    axes = expandaxes(axes)
     length(pixels) == 1 && (pixels = (pixels, pixels))
-
-    x = range(axes[1], axes[2], length=pixels[1])
-    y = range(axes[3], axes[4], length=pixels[2])
-    shader(@. f(x + im*y'))
+    img = Matrix{RGB{Float64}}(undef, pixels[1], pixels[2])
+    renderimage!(img, f, shader, limits)
+    return img
 end
 
 """
     DomainColoring.shadedplot(
         f :: "Complex -> Complex",
-        shader :: "Matrix{Complex} -> Image",
-        axes = (-1, 1, -1, 1),
+        shader :: "Complex -> Color",
+        limits = (-1, 1, -1, 1),
         pixels = (720, 720),
     )
 
 Takes a complex function **`f`** and a **`shader`** and produces a Makie
-image plot.
+plot.
 
 For documentation of the remaining arguments see [`renderimage`](@ref).
 """
 function shadedplot(
         f,
         shader,
-        axes = (-1, 1, -1, 1),
+        limits = (-1, 1, -1, 1),
         pixels = (720, 720),
     )
 
-    axes = expandaxes(axes)
+    limits = expandlimits(limits)
 
-    x = range(axes[1], axes[2], length=2)
-    y = range(axes[3], axes[4], length=2)
-    image(x, y, renderimage(f, shader, axes, pixels);
-          axis=(autolimitaspect=1,))
+    r = [limits[1], limits[2]]
+    i = [limits[3], limits[4]]
+    # images have inverted y and flip x and y in their storage
+    heatmap(r, reverse(i), renderimage(f, shader, limits, pixels)';
+            interpolate=true, axis=(autolimitaspect=1,),)
 end
 
 """
@@ -121,7 +153,7 @@ function labsweep(θ)
 end
 
 """
-    DomainColoring.domaincolorpixelshader(
+    DomainColoring.domaincolorshader(
         w :: Complex;
         abs = false,
         logabs = false,
@@ -133,7 +165,7 @@ Takes a complex value **`w`** and shades it as in a domain coloring.
 
 For documentation of the remaining arguments see [`domaincolor`](@ref).
 """
-function domaincolorpixelshader(
+function domaincolorshader(
         w;
         abs = false,
         logabs = false,
@@ -174,7 +206,7 @@ end
 """
     domaincolor(
         f :: "Complex -> Complex",
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         abs = false,
         logabs = false,
@@ -183,7 +215,7 @@ end
     )
 
 Takes a complex function and produces it's domain coloring as a Makie
-image plot.
+plot.
 
 Red corresponds to phase ``0``, yellow to ``\\frac{\\pi}{3}``, green
 to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
@@ -193,7 +225,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 
 - **`f`** is the complex function to plot.
 
-- **`axes`** are the limits of the rectangle to plot, in the format
+- **`limits`** are the limits of the rectangle to plot, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
 
@@ -216,7 +248,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 """
 function domaincolor(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         abs = false,
         logabs = false,
@@ -224,35 +256,35 @@ function domaincolor(
         all = false,
     )
 
-    shadedplot(f, W -> domaincolorpixelshader.(
-                    W; abs, logabs, grid, all
-                  ), axes, pixels)
+    shadedplot(f, w -> domaincolorshader(
+                    w; abs, logabs, grid, all
+                  ), limits, pixels)
 end
 
 """
-    DomainColoring.pdphaseplotshader(W :: Matrix{Complex})
+    DomainColoring.pdphaseplotshader(w :: Complex)
 
-Shades a matrix **`W`** of complex values as a phase plot using
+Shades a complex value **`w`** as a phase plot using
 [ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
 protanopic and deuteranopic viewers.
 
 See [pdphaseplot](@ref) for more information.
 """
-function pdphaseplotshader(W)
+function pdphaseplotshader(w)
     get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
-        @. mod(-angle(W) / 2π + .5, 1))
+        mod(-angle(w) / 2π + .5, 1))
 end
 
 """
     pdphaseplot(
         f :: "Complex -> Complex",
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
     )
 
 Takes a complex valued function and produces a phase plot as a Makie
-image plot using [ColorCET](https://colorcet.com)'s CBC1 cyclic color
-map for protanopic and deuteranopic viewers.
+plot using [ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
+protanopic and deuteranopic viewers.
 
 Yellow corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, blue
 to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
@@ -261,7 +293,7 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
 
 - **`f`** is the complex function to plot.
 
-- **`axes`** are the limits of the rectangle to plot, in the format
+- **`limits`** are the limits of the rectangle to plot, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
 
@@ -273,37 +305,37 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
 """
 function pdphaseplot(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
     )
 
-    shadedplot(f, pdphaseplotshader, axes, pixels)
+    shadedplot(f, pdphaseplotshader, limits, pixels)
 end
 
 """
-    DomainColoring.tphaseplotshader(W :: Matrix{Complex})
+    DomainColoring.tphaseplotshader(w :: Complex)
 
-Shades a matrix **`W`** of complex values as a phase plot using
+Shades a complex value **`w`** as a phase plot using
 [ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
 titranopic viewers.
 
 See [tphaseplot](@ref) for more information.
 """
-function tphaseplotshader(W)
+function tphaseplotshader(w)
     get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
-        @. mod(-angle(W) / 2π + .5, 1))
+        mod(-angle(w) / 2π + .5, 1))
 end
 
 """
     tphaseplot(
         f :: "Complex -> Complex",
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
     )
 
 Takes a complex valued function and produces a phase plot as a Makie
-image plot using [ColorCET](https://colorcet.com)'s CBTC1 cyclic color
-map for titranopic viewers.
+plot using [ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
+titranopic viewers.
 
 Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
@@ -312,7 +344,7 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 
 - **`f`** is the complex function to plot.
 
-- **`axes`** are the limits of the rectangle to plot, in the format
+- **`limits`** are the limits of the rectangle to plot, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
 
@@ -324,15 +356,15 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 """
 function tphaseplot(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
     )
 
-    shadedplot(f, tphaseplotshader, axes, pixels)
+    shadedplot(f, tphaseplotshader, limits, pixels)
 end
 
 """
-    DomainColoring.checkerplotpixelshader(
+    DomainColoring.checkerplotshader(
         w :: Complex;
         real = false,
         imag = false,
@@ -346,7 +378,7 @@ Takes a complex value **`w`** and shades it as in a checker plot.
 
 For documentation of the remaining arguments see [`checkerplot`](@ref).
 """
-function checkerplotpixelshader(
+function checkerplotshader(
         w;
         real = false,
         imag = false,
@@ -393,7 +425,7 @@ end
 """
     checkerplot(
         f :: "Complex -> Complex",
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         real = false,
         imag = false,
@@ -409,7 +441,7 @@ Takes a complex function and produces a checker plot as a Makie image.
 
 - **`f`** is the complex function to plot.
 
-- **`axes`** are the limits of the rectangle to plot, in the format
+- **`limits`** are the limits of the rectangle to plot, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
 
@@ -441,7 +473,7 @@ If none of the below options are set, the plot defaults to `rect = true`.
 """
 function checkerplot(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         real = false,
         imag = false,
@@ -451,9 +483,9 @@ function checkerplot(
         polar = false,
     )
 
-    shadedplot(f, W -> checkerplotpixelshader.(
-                    W; real, imag, rect, angle, abs, polar
-                  ), axes, pixels)
+    shadedplot(f, w -> checkerplotshader(
+                    w; real, imag, rect, angle, abs, polar
+                  ), limits, pixels)
 end
 
 end

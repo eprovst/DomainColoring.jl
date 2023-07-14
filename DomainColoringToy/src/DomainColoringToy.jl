@@ -27,8 +27,8 @@ export domaincolor, checkerplot, pdphaseplot, tphaseplot
 """
     DomainColoringToy.interactiveshadedplot(
         f :: "Complex -> Complex",
-        shader :: "Matrix{Complex} -> Image",
-        axes = (-1, 1, -1, 1),
+        shader :: "Complex -> Color",
+        limits = (-1, 1, -1, 1),
         pixels = (480, 480),
     )
 
@@ -39,9 +39,9 @@ with auto updating.
 
 - **`f`** is the complex function to plot.
 
-- **`shader`** is the shader function to compute the image.
+- **`shader`** is the shader function to compute a pixel.
 
-- **`axes`** are the initial limits of the plot, in the format
+- **`limits`** are the initial limits of the plot, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
 
@@ -53,66 +53,73 @@ with auto updating.
 function interactiveshadedplot(
         f,
         shader,
-        axes = (-1, 1, -1, 1),
+        limits = (-1, 1, -1, 1),
         pixels = (480, 480),
     )
 
     # sanitize input
     pixels == :auto && (pixels = (:auto, :auto))
     length(pixels) == 1 && (pixels = (pixels, pixels))
-    axes = DomainColoring.expandaxes(axes)
+    limits = DomainColoring.expandlimits(limits)
 
-    # setup buffers
+    # setup observables to be used by update
     img = Observable(
-        DomainColoring.renderimage(f, shader, axes, (2, 2))
+        # transpose as x and y are swapped in images
+        DomainColoring.renderimage(f, shader, limits, (2, 2))'
     )
-    xl = Observable(axes[1]..axes[2])
-    yl = Observable(axes[3]..axes[4])
+    xl = Observable([limits[1], limits[2]])
+    # reversed as y is reversed in images
+    yl = Observable([limits[4], limits[3]])
 
     # setup plot
-    fg, ax = image(xl, yl, img; axis=(autolimitaspect=1,))
+    fg, ax = heatmap(xl, yl, img; interpolate=true,
+                     axis=(autolimitaspect=1,))
 
     # set default limits
-    xlims!(ax, axes[1], axes[2])
-    ylims!(ax, axes[3], axes[4])
-
-    # keep reference to resolution
-    res = ax.scene.camera.resolution
+    xlims!(ax, limits[1], limits[2])
+    ylims!(ax, limits[3], limits[4])
 
     # update loop
-    function update(lims)
+    function update(lims, res)
+        # set render limits to viewport
         axs = (lims.origin[1], lims.origin[1] + lims.widths[1],
                lims.origin[2], lims.origin[2] + lims.widths[2])
-        xl[] = axs[1]..axs[2]
-        yl[] = axs[3]..axs[4]
+        xl[] = [axs[1], axs[2]]
+        yl[] = [axs[4], axs[3]] # reversed as y is reversed in images
 
-        # set resolution if requested
+        # get resolution if needed
         px = pixels
         if pixels[1] == :auto
-            px = (ceil(Int, 1.2res[][1]), px[2])
+            px = (ceil(Int, 1.2res[1]), px[2])
         end
         if pixels[2] == :auto
-            px = (px[1], ceil(Int, 1.2res[][2]))
+            px = (px[1], ceil(Int, 1.2res[2]))
         end
 
-        img[] = DomainColoring.renderimage(
-            f, shader, axs, px
-        )
+        # render new image reusing buffer if possible
+        if size(img[].parent) != px
+            # we write the transpose as x and y are swapped in images
+            img[] = DomainColoring.renderimage(f, shader, axs, px)'
+        else
+            # img[].parent as we want to write to the underlying buffer
+            DomainColoring.renderimage!(img[].parent, f, shader, axs)
+        end
     end
 
     # initial render
     lims = ax.finallimits
-    update(lims[])
+    res = ax.scene.camera.resolution
+    update(lims[], res[])
 
-    # observe the limits
-    on(update, lims)
+    # observe updates
+    onany(update, lims, res)
 
     return fg
 end
 
 function domaincolor(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (480, 480),
         abs = false,
         logabs = false,
@@ -122,39 +129,39 @@ function domaincolor(
 
     interactiveshadedplot(
         f,
-        W -> DomainColoring.domaincolorpixelshader.(
-            W; abs, logabs, grid, all
+        w -> DomainColoring.domaincolorshader(
+            w; abs, logabs, grid, all
         ),
-        axes,
+        limits,
         pixels,
     )
 end
 
 function pdphaseplot(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (480, 480),
     )
 
     interactiveshadedplot(
-        f, DomainColoring.pdphaseplotshader, axes, pixels
+        f, DomainColoring.pdphaseplotshader, limits, pixels
     )
 end
 
 function tphaseplot(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (480, 480),
     )
 
     interactiveshadedplot(
-        f, DomainColoring.tphaseplotshader, axes, pixels
+        f, DomainColoring.tphaseplotshader, limits, pixels
     )
 end
 
 function checkerplot(
         f,
-        axes = (-1, 1, -1, 1);
+        limits = (-1, 1, -1, 1);
         pixels = (480, 480),
         real = false,
         imag = false,
@@ -166,10 +173,10 @@ function checkerplot(
 
     interactiveshadedplot(
         f,
-        W -> DomainColoring.checkerplotpixelshader.(
-            W; real, imag, rect, angle, abs, polar
+        w -> DomainColoring.checkerplotshader(
+            w; real, imag, rect, angle, abs, polar
         ),
-        axes,
+        limits,
         pixels,
     )
 end

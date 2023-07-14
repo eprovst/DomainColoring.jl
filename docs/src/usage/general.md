@@ -3,7 +3,7 @@
 !!! note
     `DomainColoring.jl` provides plots on top of the
     [Makie](https://makie.org) framework, thus a user will have to
-    additionally install and load a Makie backend such as `CiaroMakie`
+    additionally install and load a Makie backend such as `CairoMakie`
     or `GLMakie`.
 
 ## Common options
