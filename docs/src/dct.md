@@ -11,10 +11,10 @@ which is set to `:auto` will use the viewport resolution to determine
 the number of samples. Note that this can make plotting very slow.
 
 ## Installation
-For the time being `DomainColoringToy` is experimental and thus not
-registered. To install it, use:
+`DomainColoringToy` is a different package and hence has to be installed
+separately. Installation is as usual:
 ```
-]add https://github.com/eprovst/DomainColoring.jl#main:DomainColoringToy
+]add DomainColoringToy
 ```
 
 ## Library
