@@ -13,7 +13,7 @@
 module DomainColoringToy
 
 using GLMakie
-import DomainColoring
+import DomainColoring as DC
 
 export domaincolor, checkerplot, pdphaseplot, tphaseplot
 
@@ -53,20 +53,21 @@ function interactiveshadedplot(
     # sanitize input
     pixels == :auto && (pixels = (:auto, :auto))
     length(pixels) == 1 && (pixels = (pixels, pixels))
-    limits = DomainColoring.expandlimits(limits)
+    limits = DC.expandlimits(limits)
 
     # setup observables to be used by update
     img = Observable(
-        # transpose as x and y are swapped in images
-        DomainColoring.renderimage(f, shader, limits, (2, 2))'
+        # tiny render to catch errors and setup type
+        DC.renderimage(f, shader, limits, (2, 2))
     )
     xl = Observable([limits[1], limits[2]])
-    # reversed as y is reversed in images
-    yl = Observable([limits[4], limits[3]])
+    yl = Observable([limits[3], limits[4]])
 
     # setup plot
-    fg, ax = heatmap(xl, yl, img; interpolate=true,
-                     axis=(autolimitaspect=1,))
+    # transpose as x and y are swapped in images
+    # reverse as y is reversed in images
+    fg, ax = heatmap(xl, lift(reverse, yl), lift(adjoint, img);
+                     interpolate=true, axis=(autolimitaspect=1,))
 
     # set default limits
     xlims!(ax, limits[1], limits[2])
@@ -78,25 +79,19 @@ function interactiveshadedplot(
         axs = (lims.origin[1], lims.origin[1] + lims.widths[1],
                lims.origin[2], lims.origin[2] + lims.widths[2])
         xl[] = [axs[1], axs[2]]
-        yl[] = [axs[4], axs[3]] # reversed as y is reversed in images
+        yl[] = [axs[3], axs[4]]
 
         # get resolution if needed
-        px = pixels
-        if pixels[1] == :auto
-            px = (ceil(Int, 1.2res[1]), px[2])
-        end
-        if pixels[2] == :auto
-            px = (px[1], ceil(Int, 1.2res[2]))
-        end
+        px = map((p, r) -> p == :auto ? ceil(Int, 1.1r) : p,
+                 pixels, tuple(res...))
 
         # render new image reusing buffer if possible
-        if size(img[].parent) != px
-            # we write the transpose as x and y are swapped in images
-            img[] = DomainColoring.renderimage(f, shader, axs, px)'
+        if size(img.val) != px
+            img.val = DC.renderimage(f, shader, axs, px)
         else
-            # img[].parent as we want to write to the underlying buffer
-            DomainColoring.renderimage!(img[].parent, f, shader, axs)
+            DC.renderimage!(img.val, f, shader, axs)
         end
+        notify(img)
     end
 
     # initial render
@@ -165,11 +160,7 @@ function domaincolor(
     )
 
     interactiveshadedplot(
-        f,
-        w -> DomainColoring.domaincolorshader(
-            w; abs, logabs, grid, all
-        ),
-        limits,
+        f, w -> DC.domaincolorshader(w; abs, logabs, grid, all), limits,
         pixels,
     )
 end
@@ -209,9 +200,7 @@ function pdphaseplot(
         pixels = (480, 480),
     )
 
-    interactiveshadedplot(
-        f, DomainColoring.pdphaseplotshader, limits, pixels
-    )
+    interactiveshadedplot(f, DC.pdphaseplotshader, limits, pixels)
 end
 
 """
@@ -249,9 +238,7 @@ function tphaseplot(
         pixels = (480, 480),
     )
 
-    interactiveshadedplot(
-        f, DomainColoring.tphaseplotshader, limits, pixels
-    )
+    interactiveshadedplot(f, DC.tphaseplotshader, limits, pixels)
 end
 
 """
@@ -317,13 +304,9 @@ function checkerplot(
         polar = false,
     )
 
-    interactiveshadedplot(
-        f,
-        w -> DomainColoring.checkerplotshader(
+    interactiveshadedplot(f, w -> DC.checkerplotshader(
             w; real, imag, rect, angle, abs, polar
-        ),
-        limits,
-        pixels,
+        ), limits, pixels,
     )
 end
 
