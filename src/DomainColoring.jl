@@ -125,6 +125,89 @@ function shadedplot(
             interpolate=true, axis=(autolimitaspect=1,),)
 end
 
+
+# Logic for grid like plotting elements, somewhat ugly, but it works.
+# `w` is the complex value, `checker` is a boolean for the others see
+# `checkerplot`.
+function _grid(
+        w,
+        checker;
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+    )
+
+    # set carthesian grid if no options given
+    if real isa Bool && imag isa Bool && rect isa Bool &&
+       angle isa Bool && abs isa Bool && polar isa Bool &&
+       !(real || imag || rect || angle || abs || polar)
+        rect = true
+    end
+
+    # carthesian checker plot
+    if rect isa Bool
+        if rect
+            real = true
+            imag = true
+        end
+    elseif length(rect) > 1
+        real = rect[1]
+        imag = rect[2]
+    else
+        real = rect
+        imag = rect
+    end
+
+    # polar checker plot
+    if polar isa Bool
+        if polar
+            angle = true
+            abs = true
+        end
+    elseif length(polar) > 1
+        angle = polar[1]
+        abs = polar[2]
+    else
+        angle = polar
+        abs = polar
+    end
+
+    # set defaults
+    (real isa Bool && real) && (real = 5)
+    (imag isa Bool && imag) && (imag = 5)
+    (angle isa Bool && angle) && (angle = 16)
+    (abs isa Bool && abs) && (abs = 5)
+
+    g = 1.0
+    if real > 0 && isfinite(4*real*Base.real(w))
+        g *= sin(real*π*Base.real(w))
+    end
+    if imag > 0 && isfinite(4*imag*Base.imag(w))
+        g *= sin(imag*π*Base.imag(w))
+    end
+    if angle > 0 && isfinite(angle*Base.angle(w))
+        g *= sin(angle*Base.angle(w))
+    end
+    if abs > 0 && isfinite(4*abs*log(Base.abs(w)))
+        g *= sin(abs*π*log(Base.abs(w)))
+    end
+
+    if checker
+        min(1, sign(g) + 1)
+    else
+        Base.abs(g)^0.06
+    end
+end
+
+_grid(w, checker, args::NamedTuple) = _grid(w, checker; args...)
+
+_grid(w, checker, arg::Bool) = arg ? _grid(w, checker) : 1.0
+
+_grid(w, checker, arg) = _grid(w, checker; rect=arg)
+
 """
     DomainColoring.labsweep(θ)
 
@@ -191,13 +274,8 @@ function domaincolorshader(
     end
 
     # add integer grid if requested
-    if grid
-        r, i = reim(w)
-        if isfinite(4r) && isfinite(4i)
-            it = Base.abs(sin(π*r)*sin(π*i))^0.06
-            c = mapc(x -> it*x, c)
-        end
-    end
+    g = _grid(w, false, grid)
+    c = mapc(x -> g*x, c)
 
     return c
 end
@@ -241,7 +319,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   white.
 
 - **`grid`** plots points with integer real or imaginary part as black
-  dots.
+  dots. More complicated arguments can be passed as a named tuple in a
+  similar fashion to [`checkerplot`](@ref).
 
 - **`all`** is a shortcut for `abs = true` and `grid = true`.
 """
@@ -387,38 +466,8 @@ function checkerplotshader(
         polar = false,
     )
 
-    # set defaults if no options given
-    if !(real || imag || rect || angle || abs || polar)
-        rect = true
-    end
-
-    # carthesian checker plot
-    if rect
-        real = true
-        imag = true
-    end
-
-    # polar checker plot
-    if polar
-        angle = true
-        abs = true
-    end
-
-    g = 1.0
-    if real && isfinite(20Base.real(w))
-        g *= sin(5π*Base.real(w))
-    end
-    if imag && isfinite(20Base.imag(w))
-        g *= sin(5π*Base.imag(w))
-    end
-    if angle && isfinite(16Base.angle(w))
-        g *= sin(16Base.angle(w))
-    end
-    if abs && isfinite(20log(Base.abs(w)))
-        g *= sin(5π*log(Base.abs(w)))
-    end
-
-    return Gray(0.9min(1, sign(g) + 1) + 0.08)
+    g = _grid(w, true; real, imag, rect, angle, abs, polar)
+    return Gray(0.9g + 0.08)
 end
 
 """
@@ -451,6 +500,7 @@ Takes a complex function and produces a checker plot as a Makie plot.
   is provided.
 
 If none of the below options are set, the plot defaults to `rect = true`.
+Numbers can be provided instead of booleans to override the default rates.
 
 - **`real`** plots black and white stripes orthogonal to the real axis
   at a rate of 5 stripes per unit.
