@@ -53,7 +53,7 @@ function interactiveshadedplot(
     # sanitize input
     pixels == :auto && (pixels = (:auto, :auto))
     length(pixels) == 1 && (pixels = (pixels, pixels))
-    limits = DC.expandlimits(limits)
+    limits = DC._expandlimits(limits)
 
     # setup observables to be used by update
     img = Observable(
@@ -112,6 +112,7 @@ end
         pixels = (480, 480),
         abs = false,
         logabs = false,
+        fullabs = false,
         grid = false,
         all = false,
     )
@@ -155,13 +156,14 @@ function domaincolor(
         pixels = (480, 480),
         abs = false,
         logabs = false,
+        fullabs = false,
         grid = false,
         all = false,
     )
 
     interactiveshadedplot(
-        f, w -> DC.domaincolorshader(w; abs, logabs, grid, all), limits,
-        pixels,
+        f, w -> DC.domaincolorshader(w; abs, logabs, fullabs, grid, all),
+        limits, pixels,
     )
 end
 

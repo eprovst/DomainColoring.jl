@@ -16,21 +16,15 @@ using MakieCore, ColorTypes, ColorSchemes
 
 export domaincolor, checkerplot, pdphaseplot, tphaseplot
 
-"""
-    DomainColoring.expandlimits(limits)
-
-Implements the **`limits`** expansion typical of the functions in this
-module, additionally normalizes to tuples.
-
-See e.g. [`renderimage`](@ref) for a description of the expansion.
-"""
-function expandlimits(limits)
+# Implements the `limits` expansion typical of the functions in this
+# module, additionally normalizes to tuples.
+function _expandlimits(limits)
     if length(limits) == 1
         return Float64.(tuple(-limits, limits, -limits, limits))
     elseif length(limits) == 2
         return Float64.(tuple(-limits[1], limits[1], -limits[2], limits[2]))
     else
-        return Float64.(tuple(limits...))
+        return Float64.(Tuple(limits))
     end
 end
 
@@ -61,7 +55,7 @@ function renderimage!(
         limits = (-1, 1, -1, 1),
     )
 
-    limits = expandlimits(limits)
+    limits = _expandlimits(limits)
     r = range(limits[1], limits[2], length=size(img, 2))
     i = range(limits[4], limits[3], length=size(img, 1))
     broadcast!((r, i) -> shader(f(r + im*i)), img, r', i)
@@ -122,7 +116,7 @@ function shadedplot(
         pixels = (720, 720),
     )
 
-    limits = expandlimits(limits)
+    limits = _expandlimits(limits)
 
     r = [limits[1], limits[2]]
     i = [limits[3], limits[4]]
@@ -139,7 +133,7 @@ taking
 
 ```math
 \\begin{aligned}
-      L^* &= 12 \\cos(3\\theta - \\pi) + 67, \\\\
+      L^* &= 67 - 12 \\cos(3\\theta), \\\\
       a^* &= 46 \\cos(\\theta + .4) - 3, \\quad\\text{and} \\\\
       b^* &= 46 \\sin(\\theta + .4) - 16.
   \\end{aligned}
@@ -149,7 +143,7 @@ See [Phase Wheel](@ref) for more information.
 """
 function labsweep(θ)
     θ = mod(θ, 2π)
-    Lab(12cos(3θ - π) + 67, 46cos(θ + .4) - 3, 46sin(θ + .4) + 16)
+    Lab(67 - 12cos(3θ), 46cos(θ + .4) - 3, 46sin(θ + .4) + 16)
 end
 
 """
@@ -157,6 +151,7 @@ end
         w :: Complex;
         abs = false,
         logabs = false,
+        fullabs = false,
         grid = false,
         all = false,
     )
@@ -169,6 +164,7 @@ function domaincolorshader(
         w;
         abs = false,
         logabs = false,
+        fullabs = false,
         grid = false,
         all = false,
     )
@@ -183,11 +179,17 @@ function domaincolorshader(
     c = labsweep(angle(w))
 
     # add magnitude if requested
-    if abs || logabs
+    if abs || logabs || fullabs
         m = Base.abs(w)
-        logabs && (m = log(m))
+        (logabs || fullabs) && (m = log(m))
         if isfinite(m)
-            c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b)
+            if fullabs
+                t = exp(-.01m^2)
+                g = 100(sign(m)/2 + .5)
+                c = Lab((1 - t)g + t*c.l, t*c.a, t*c.b)
+            else
+                c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b)
+            end
         end
     end
 
@@ -210,6 +212,7 @@ end
         pixels = (720, 720),
         abs = false,
         logabs = false,
+        fullabs = false,
         grid = false,
         all = false,
     )
@@ -241,6 +244,9 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 - **`logabs`** is similar to `abs` but shows the natural logarithm of
   the magnitude instead. This option takes precedence over `abs`.
 
+- **`fullabs`** show zero magnitude a black and infinite magnitude as
+  white.
+
 - **`grid`** plots points with integer real or imaginary part as black
   dots.
 
@@ -252,12 +258,13 @@ function domaincolor(
         pixels = (720, 720),
         abs = false,
         logabs = false,
+        fullabs = false,
         grid = false,
         all = false,
     )
 
     shadedplot(f, w -> domaincolorshader(
-                    w; abs, logabs, grid, all
+                    w; abs, logabs, fullabs, grid, all
                   ), limits, pixels)
 end
 
