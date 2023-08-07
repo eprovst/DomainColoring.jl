@@ -111,7 +111,6 @@ end
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
         abs = false,
-        logabs = false,
         fullabs = false,
         grid = false,
         all = false,
@@ -139,11 +138,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
 
-- **`abs`** toggles the plotting of the magnitude as lightness ramps
-  between level curves.
-
-- **`logabs`** is similar to `abs` but shows the natural logarithm of
-  the magnitude instead. This option takes precedence over `abs`.
+- **`abs`** toggles the plotting of the natural logarithm of the
+  magnitude as lightness ramps between level curves.
 
 - **`grid`** plots points with integer real or imaginary part as black
   dots.
@@ -155,14 +151,13 @@ function domaincolor(
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
         abs = false,
-        logabs = false,
         fullabs = false,
         grid = false,
         all = false,
     )
 
     interactiveshadedplot(
-        f, w -> DC.domaincolorshader(w; abs, logabs, fullabs, grid, all),
+        f, w -> DC.domaincolorshader(w; abs, fullabs, grid, all),
         limits, pixels,
     )
 end

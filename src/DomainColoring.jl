@@ -150,7 +150,6 @@ end
     DomainColoring.domaincolorshader(
         w :: Complex;
         abs = false,
-        logabs = false,
         fullabs = false,
         grid = false,
         all = false,
@@ -163,7 +162,6 @@ For documentation of the remaining arguments see [`domaincolor`](@ref).
 function domaincolorshader(
         w;
         abs = false,
-        logabs = false,
         fullabs = false,
         grid = false,
         all = false,
@@ -179,9 +177,8 @@ function domaincolorshader(
     c = labsweep(angle(w))
 
     # add magnitude if requested
-    if abs || logabs || fullabs
-        m = Base.abs(w)
-        (logabs || fullabs) && (m = log(m))
+    if abs || fullabs
+        m = log(Base.abs(w))
         if isfinite(m)
             if fullabs
                 t = exp(-.01m^2)
@@ -211,7 +208,6 @@ end
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         abs = false,
-        logabs = false,
         fullabs = false,
         grid = false,
         all = false,
@@ -238,11 +234,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
-- **`abs`** toggles the plotting of the magnitude as lightness ramps
-  between level curves.
-
-- **`logabs`** is similar to `abs` but shows the natural logarithm of
-  the magnitude instead. This option takes precedence over `abs`.
+- **`abs`** toggles the plotting of the natural logarithm of the
+  magnitude as lightness ramps between level curves.
 
 - **`fullabs`** show zero magnitude a black and infinite magnitude as
   white.
@@ -257,14 +250,13 @@ function domaincolor(
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         abs = false,
-        logabs = false,
         fullabs = false,
         grid = false,
         all = false,
     )
 
     shadedplot(f, w -> domaincolorshader(
-                    w; abs, logabs, fullabs, grid, all
+                    w; abs, fullabs, grid, all
                   ), limits, pixels)
 end
 

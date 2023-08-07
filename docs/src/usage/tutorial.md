@@ -132,7 +132,7 @@ options, and the other provided plotting function [`checkerplot`](@ref).
 
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(z -> im*z^3-1, 2.5, logabs=true, grid=true)
+domaincolor(z -> im*z^3-1, 2.5, all=true)
 save("logoexample.png", current_figure()) # hide
 nothing # hide
 ```

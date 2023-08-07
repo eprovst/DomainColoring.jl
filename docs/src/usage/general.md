@@ -45,7 +45,7 @@ nothing # hide
 One can additionally superimpose contour lines of the magnitude as
 sweeps of increasing lightness by setting `abs = true`. Where this
 increase of lightness is taken proportional to the fractional part of
-$|f(z)|$.
+``\log|f(z)|``.
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5), abs=true)
@@ -53,17 +53,6 @@ save("dcsincabs.png", current_figure()) # hide
 nothing # hide
 ```
 ![](dcsincabs.png)
-
-Alternatively one can take it proportional to the fractional part of
-``\log|f(z)|``, by setting `logabs = true`. When both `abs` and `logabs`
-are set to true, `logabs` takes precedence.
-```@example
-using CairoMakie, DomainColoring # hide
-domaincolor(sinc, (3, 1.5), logabs=true)
-save("dcsinclogabs.png", current_figure()) # hide
-nothing # hide
-```
-![](dcsinclogabs.png)
 
 Finally, one can also add a dark grid where the imaginary or real part
 of ``f(z)`` is integer by setting `grid = true`.
