@@ -78,11 +78,11 @@ nothing # hide
 
 A checker plot shows limited information and is useful to detect
 patterns in certain contexts. By default a checker board pattern is used
-with five stripes for an unit increase in either direction. A
+with one stripe for an unit increase in either direction. A
 checkerplot of the identity function makes this clearer.
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z)
+checkerplot(z -> z, 5)
 save("cprect.png", current_figure()) # hide
 nothing # hide
 ```
@@ -93,7 +93,7 @@ part by setting `real = true` or `imag = true`, respectively. Again the
 previous example.
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, real=true)
+checkerplot(z -> z, 5, real=true)
 save("cpreal.png", current_figure()) # hide
 nothing # hide
 ```
@@ -103,11 +103,11 @@ Setting `real = true` and `imag = true` can be abbreviated to
 `rect = true`, which is identical to the default behaviour.
 
 Alternatively one can also display a polar grid by setting
-`polar = true`, giving 5 band per unit increase of ``\log|f(z)|`` and 32
-bands per ``2\pi`` increase of ``\arg(f(z))``.
+`polar = true`, giving one band per unit increase of ``\log|f(z)|`` and
+six bands per ``2\pi`` increase of ``\arg(f(z))``.
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, polar=true)
+checkerplot(z -> z, 5, polar=true)
 save("cppolar.png", current_figure()) # hide
 nothing # hide
 ```
@@ -118,7 +118,7 @@ As with `rect = true`, `polar = true` is an abbreviation for
 respectively. It is worthwhile to illustrate both, giving for magnitude:
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, abs=true)
+checkerplot(z -> z, 5, abs=true)
 save("cpabs.png", current_figure()) # hide
 nothing # hide
 ```
@@ -126,7 +126,7 @@ nothing # hide
 and for phase:
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, angle=true)
+checkerplot(z -> z, 5, angle=true)
 save("cpangle.png", current_figure()) # hide
 nothing # hide
 ```

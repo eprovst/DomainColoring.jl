@@ -171,15 +171,15 @@ function _grid(
         angle = polar[1]
         abs = polar[2]
     else
-        angle = polar
+        angle = 2round(π*polar)
         abs = polar
     end
 
     # set defaults
-    (real isa Bool && real) && (real = 5)
-    (imag isa Bool && imag) && (imag = 5)
-    (angle isa Bool && angle) && (angle = 16)
-    (abs isa Bool && abs) && (abs = 5)
+    (real isa Bool && real) && (real = 1)
+    (imag isa Bool && imag) && (imag = 1)
+    (angle isa Bool && angle) && (angle = 6)
+    (abs isa Bool && abs) && (abs = 1)
 
     g = 1.0
     if real > 0 && isfinite(4*real*Base.real(w))
@@ -189,7 +189,8 @@ function _grid(
         g *= sin(imag*π*Base.imag(w))
     end
     if angle > 0 && isfinite(angle*Base.angle(w))
-        g *= sin(angle*Base.angle(w))
+        checker && @assert iseven(angle) "Rate of angle has to be even."
+        g *= sin(angle/2*Base.angle(w))
     end
     if abs > 0 && isfinite(4*abs*log(Base.abs(w)))
         g *= sin(abs*π*log(Base.abs(w)))
@@ -233,7 +234,6 @@ end
     DomainColoring.domaincolorshader(
         w :: Complex;
         abs = false,
-        fullabs = false,
         grid = false,
         all = false,
     )
@@ -245,7 +245,6 @@ For documentation of the remaining arguments see [`domaincolor`](@ref).
 function domaincolorshader(
         w;
         abs = false,
-        fullabs = false,
         grid = false,
         all = false,
     )
@@ -259,16 +258,28 @@ function domaincolorshader(
     # phase color
     c = labsweep(angle(w))
 
+    # set defaults for magnitude
+    if abs isa Bool
+        abs = (base = abs ? exp(1) : 0,)
+    elseif !(abs isa NamedTuple)
+        # wrap base, if just a number
+        abs = (base = float(abs),)
+    end
+    abs_base = get(abs, :base, exp(1))
+    abs_transform = get(abs, :transform, m -> log(abs_base, m))
+    abs_sigma = get(abs, :sigma, 0.02)
+
     # add magnitude if requested
-    if abs || fullabs
-        m = log(Base.abs(w))
-        if isfinite(m)
-            if fullabs
-                t = exp(-.01m^2)
+    if abs_base > 0
+        if isfinite(abs_base)
+            m = abs_transform(Base.abs(w))
+            isfinite(m) && (c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b))
+        else
+            m = log(Base.abs(w))
+            if isfinite(m)
+                t = exp(-abs_sigma*m^2)
                 g = 100(sign(m)/2 + .5)
                 c = Lab((1 - t)g + t*c.l, t*c.a, t*c.b)
-            else
-                c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b)
             end
         end
     end
@@ -286,7 +297,6 @@ end
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         abs = false,
-        fullabs = false,
         grid = false,
         all = false,
     )
@@ -315,9 +325,6 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves.
 
-- **`fullabs`** show zero magnitude a black and infinite magnitude as
-  white.
-
 - **`grid`** plots points with integer real or imaginary part as black
   dots. More complicated arguments can be passed as a named tuple in a
   similar fashion to [`checkerplot`](@ref).
@@ -329,13 +336,12 @@ function domaincolor(
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
         abs = false,
-        fullabs = false,
         grid = false,
         all = false,
     )
 
     shadedplot(f, w -> domaincolorshader(
-                    w; abs, fullabs, grid, all
+                    w; abs, grid, all
                   ), limits, pixels)
 end
 
@@ -503,19 +509,17 @@ If none of the below options are set, the plot defaults to `rect = true`.
 Numbers can be provided instead of booleans to override the default rates.
 
 - **`real`** plots black and white stripes orthogonal to the real axis
-  at a rate of 5 stripes per unit.
+  at a rate of one stripe per unit.
 
 - **`imag`** plots black and white stripes orthogonal to the imaginary
-  axis at a rate of 5 stripes per unit.
+  axis at a rate of one stripe per unit.
 
 - **`rect`** is a shortcut for `real = true` and `imag = true`.
 
-- **`phase`** is a shortcut for `angle = true` and `abs = true`.
-
 - **`angle`** plots black and white stripes orthogonal to the phase
-  angle at a rate of 32 stripes per full rotation.
+  angle at a rate of six stripes per full rotation.
 
-- **`abs`** plots black and white stripes at a rate of 5 stripes per
+- **`abs`** plots black and white stripes at a rate of one stripe per
   unit increase of the natural logarithm of the magnitude.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.

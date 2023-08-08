@@ -111,7 +111,6 @@ end
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
         abs = false,
-        fullabs = false,
         grid = false,
         all = false,
     )
@@ -151,15 +150,12 @@ function domaincolor(
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
         abs = false,
-        fullabs = false,
         grid = false,
         all = false,
     )
 
     interactiveshadedplot(
-        f, w -> DC.domaincolorshader(w; abs, fullabs, grid, all),
-        limits, pixels,
-    )
+        f, w -> DC.domaincolorshader(w; abs, grid, all), limits, pixels)
 end
 
 """
