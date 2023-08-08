@@ -208,6 +208,45 @@ _grid(w, checker, arg::Bool) = arg ? _grid(w, checker) : 1.0
 
 _grid(w, checker, arg) = _grid(w, checker; rect=arg)
 
+# Implements the magnitude logic for `domaincolorshader`
+# isnothing(transform) gives the default log, and saves us
+# from compiling an anonymous function each call. See `domaincolor`
+# for further argument description.
+function _add_magnitude(
+        w,
+        c;
+        base = exp(1),
+        transform = nothing,
+        sigma = 0.02,
+    )
+
+    # add magnitude if requested
+    if base > 0
+        if isfinite(base)
+            if isnothing(transform)
+                m = log(base, abs(w))
+            else
+                m = transform(abs(w))
+            end
+            isfinite(m) && (c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b))
+        else
+            m = log(abs(w))
+            if isfinite(m)
+                t = exp(-sigma*m^2)
+                g = 100(sign(m)/2 + .5)
+                c = Lab((1 - t)g + t*c.l, t*c.a, t*c.b)
+            end
+        end
+    end
+    return c
+end
+
+_add_magnitude(w, c, args::NamedTuple) = _add_magnitude(w, c; args...)
+
+_add_magnitude(w, c, arg::Bool) = arg ? _add_magnitude(w, c) : c
+
+_add_magnitude(w, c, arg) = _add_magnitude(w, c, base=arg)
+
 """
     DomainColoring.labsweep(θ)
 
@@ -257,31 +296,8 @@ function domaincolorshader(
     # phase color
     c = labsweep(angle(w))
 
-    # set defaults for magnitude
-    if abs isa Bool
-        abs = (base = abs ? exp(1) : 0,)
-    elseif !(abs isa NamedTuple)
-        # wrap base, if just a number
-        abs = (base = float(abs),)
-    end
-    abs_base = get(abs, :base, exp(1))
-    abs_transform = get(abs, :transform, m -> log(abs_base, m))
-    abs_sigma = get(abs, :sigma, 0.02)
-
-    # add magnitude if requested
-    if abs_base > 0
-        if isfinite(abs_base)
-            m = abs_transform(Base.abs(w))
-            isfinite(m) && (c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b))
-        else
-            m = log(Base.abs(w))
-            if isfinite(m)
-                t = exp(-abs_sigma*m^2)
-                g = 100(sign(m)/2 + .5)
-                c = Lab((1 - t)g + t*c.l, t*c.a, t*c.b)
-            end
-        end
-    end
+    # add magnitude
+    c = _add_magnitude(w, c, abs)
 
     # add integer grid if requested
     if !(grid isa Bool) || grid
