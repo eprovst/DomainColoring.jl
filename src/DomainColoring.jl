@@ -141,7 +141,7 @@ function _grid(
     )
 
     # set carthesian grid if no options given
-    if all(b -> !(b isa Bool) || !b,
+    if all(b -> b isa Bool && !b,
            [real, imag, rect, angle, abs, polar])
         rect = true
     end
@@ -332,7 +332,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   parameters `base`, `transform`, or `sigma`. `base` changes the base of
   the logarithm, as before. `transform` is the function applied to the
   magnitude (`m -> log(base, m)` by default), and `sigma` changes the
-  rate at which zeros and poles are colored when `base = Inf`
+  rate at which zeros and poles are colored when `base = Inf`.
 
 - **`grid`** plots points with integer real or imaginary part as black
   dots. More complicated arguments can be passed as a named tuple in a

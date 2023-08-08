@@ -74,6 +74,10 @@ nothing # hide
 ```
 ![](dcsincall.png)
 
+The argument interface contains many further options, but we will delay
+their discussion until after introducing the [`checkerplot`](@ref)
+function.
+
 ## The [`checkerplot`](@ref) function
 
 A checker plot shows limited information and is useful to detect
@@ -115,10 +119,12 @@ nothing # hide
 
 As with `rect = true`, `polar = true` is an abbreviation for
 `abs = true` and `angle = true`, showing magnitude and phase
-respectively. It is worthwhile to illustrate both, giving for magnitude:
+respectively. Now is a good time to mention that most arguments
+discussed so far also accept numbers, modifying the rate of the stripes.
+For example, we get for magnitude:
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, abs=true)
+checkerplot(z -> z, 5, abs=5)
 save("cpabs.png", current_figure()) # hide
 nothing # hide
 ```
@@ -126,8 +132,74 @@ nothing # hide
 and for phase:
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, angle=true)
+checkerplot(z -> z, 5, angle=10)
 save("cpangle.png", current_figure()) # hide
 nothing # hide
 ```
 ![](cpangle.png)
+
+Note, that for the latter we need to provide an even number. If we set
+`phase` to a number, this will be used for `abs` and a suitable integer
+rate will be chosen for `angle`, for instance:
+```@example
+using CairoMakie, DomainColoring # hide
+checkerplot(sin, (5, 2), polar=4)
+save("cppolarsin.png", current_figure()) # hide
+nothing # hide
+```
+![](cppolarsin.png)
+
+## The [`domaincolor`](@ref) function, revisited
+
+Like [`checkerplot`](@ref), `abs` and `grid` also accept numbers.
+Respectively, changing the basis of the used logarithm and the rate of
+the grid. Additionally, we can pass named tuples to open up even more
+options.
+
+For `grid` these options are identical to `checkerplot`, for example an
+analogous example to the final one of last section, is given by:
+```@example
+using CairoMakie, DomainColoring # hide
+domaincolor(sin, (5, 2), grid=(polar=4,))
+save("dcpolarsin.png", current_figure()) # hide
+nothing # hide
+```
+![](dcpolarsin.png)
+(Note: unlike before, the rate of `angle` need not be even for grids.)
+
+The `abs` argument accepts a different basis from the default ``e``, if
+we for instance wanted to see orders of magnitude, we could look at:
+```@example
+using CairoMakie, DomainColoring # hide
+domaincolor(z -> z^3, 5, abs=10)
+save("dcordermag.png", current_figure()) # hide
+nothing # hide
+```
+![](dcordermag.png)
+
+If one does not want to look at the logarithm of the magnitude, but the
+magnitude itself, they can use the `transform` option, for instance:
+```@example
+using CairoMakie, DomainColoring # hide
+domaincolor(sqrt, (-1, 20, -5, 5), abs=(transform=z->z,))
+save("dclinmag.png", current_figure()) # hide
+nothing # hide
+```
+![](dclinmag.png)
+
+Finally, if we set the base to `Inf`, the magnitude is colored from
+black from zero to white at infinity, which we can use to illustrate the
+Casorati–Weierstrass theorem:
+```@example
+using CairoMakie, DomainColoring # hide
+domaincolor(z -> exp(1/z), .1, abs=Inf)
+save("cwthm.png", current_figure()) # hide
+nothing # hide
+```
+![](cwthm.png)
+
+The harshness of these white an black areas can be changed using the
+`sigma` parameter, try for instance:
+```julia
+domaincolor(z -> exp(1/z), .1, abs=(base=Inf, sigma=0.001))
+```

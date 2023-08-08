@@ -18,8 +18,8 @@ makedocs(
       "usage/general.md",
       "usage/cvd.md",
     ],
-    "DomainColoringToy" => "dct.md",
     "Library" => "lib.md",
+    "DomainColoringToy" => "dct.md",
     "Design Choices" => [
       "design/phasewheel.md",
     ],
