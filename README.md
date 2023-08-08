@@ -11,5 +11,5 @@
   </a>
 </p>
 <p>
-  Interactive domain colorings and checker plots of complex functions in Julia using smooth colors.
+  Domain colorings and checker plots of complex functions in Julia using smooth colors.
 </p>
