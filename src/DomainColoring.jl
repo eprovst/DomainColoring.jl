@@ -285,8 +285,11 @@ function domaincolorshader(
     end
 
     # add integer grid if requested
-    g = _grid(w, false, grid)
-    c = mapc(x -> g*x, c)
+    if !(grid isa Bool) || grid
+        # slightly overattenuate to compensate global darkening
+        g = 1.06_grid(w, false, grid)
+        c = mapc(x -> g*x, c)
+    end
 
     return c
 end
