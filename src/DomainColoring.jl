@@ -141,9 +141,8 @@ function _grid(
     )
 
     # set carthesian grid if no options given
-    if real isa Bool && imag isa Bool && rect isa Bool &&
-       angle isa Bool && abs isa Bool && polar isa Bool &&
-       !(real || imag || rect || angle || abs || polar)
+    if all(b -> !(b isa Bool) || !b,
+           [real, imag, rect, angle, abs, polar])
         rect = true
     end
 
@@ -326,7 +325,14 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   is provided.
 
 - **`abs`** toggles the plotting of the natural logarithm of the
-  magnitude as lightness ramps between level curves.
+  magnitude as lightness ramps between level curves. If set to a number,
+  this will be used as base of the logarithm instead, if set to `Inf`,
+  zero magnitude will be colored black and poles white. Further granular
+  control can be achieved by passing a named tuple with any of the
+  parameters `base`, `transform`, or `sigma`. `base` changes the base of
+  the logarithm, as before. `transform` is the function applied to the
+  magnitude (`m -> log(base, m)` by default), and `sigma` changes the
+  rate at which zeros and poles are colored when `base = Inf`
 
 - **`grid`** plots points with integer real or imaginary part as black
   dots. More complicated arguments can be passed as a named tuple in a

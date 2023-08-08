@@ -1,7 +1,7 @@
 name = "DomainColoring"
 uuid = "c24f3079-adb7-4533-8329-9f66732e5e85"
 authors = ["Evert Provoost <evert@eprovst.net>"]
-version = "0.3.0"
+version = "0.4.0"
 
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"

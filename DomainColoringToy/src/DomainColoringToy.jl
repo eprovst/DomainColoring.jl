@@ -138,10 +138,18 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   viewport resolution is used.
 
 - **`abs`** toggles the plotting of the natural logarithm of the
-  magnitude as lightness ramps between level curves.
+  magnitude as lightness ramps between level curves. If set to a number,
+  this will be used as base of the logarithm instead, if set to `Inf`,
+  zero magnitude will be colored black and poles white. Further granular
+  control can be achieved by passing a named tuple with any of the
+  parameters `base`, `transform`, or `sigma`. `base` changes the base of
+  the logarithm, as before. `transform` is the function applied to the
+  magnitude (`m -> log(base, m)` by default), and `sigma` changes the
+  rate at which zeros and poles are colored when `base = Inf`
 
 - **`grid`** plots points with integer real or imaginary part as black
-  dots.
+  dots. More complicated arguments can be passed as a named tuple in a
+  similar fashion to [`checkerplot`](@ref).
 
 - **`all`** is a shortcut for `abs = true` and `grid = true`.
 """
@@ -266,21 +274,20 @@ GLMakie plot.
   viewport resolution is used.
 
 If none of the below options are set, the plot defaults to `rect = true`.
+Numbers can be provided instead of booleans to override the default rates.
 
 - **`real`** plots black and white stripes orthogonal to the real axis
-  at a rate of 5 stripes per unit.
+  at a rate of one stripe per unit.
 
 - **`imag`** plots black and white stripes orthogonal to the imaginary
-  axis at a rate of 5 stripes per unit.
+  axis at a rate of one stripe per unit.
 
 - **`rect`** is a shortcut for `real = true` and `imag = true`.
 
-- **`phase`** is a shortcut for `angle = true` and `abs = true`.
-
 - **`angle`** plots black and white stripes orthogonal to the phase
-  angle at a rate of 32 stripes per full rotation.
+  angle at a rate of six stripes per full rotation.
 
-- **`abs`** plots black and white stripes at a rate of 5 stripes per
+- **`abs`** plots black and white stripes at a rate of one stripe per
   unit increase of the natural logarithm of the magnitude.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
