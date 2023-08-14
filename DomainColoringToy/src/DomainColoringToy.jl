@@ -138,7 +138,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
 
-- **`angle`** toggles coloring of the phase angle.
+- **`angle`** toggles coloring of the phase angle. Can also be set to
+  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
 
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves. If set to a number,

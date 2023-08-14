@@ -178,17 +178,18 @@ nothing # hide
 ![](dcordermag.png)
 
 If one does not want to look at the logarithm of the magnitude, but the
-magnitude itself, they can use the `transform` option, for instance:
+magnitude itself, they can use the `transform` option, or pass a
+function directly to `abs`, for instance:
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(sqrt, (-1, 20, -5, 5), abs=(transform=z->z,))
+domaincolor(sqrt, (-1, 20, -5, 5), abs=z->z)
 save("dclinmag.png", current_figure()) # hide
 nothing # hide
 ```
 ![](dclinmag.png)
 
 Finally, if we set the base to `Inf`, the magnitude is colored from
-black from zero to white at infinity, which we can use to illustrate the
+black at zero to white at infinity, which we can use to illustrate the
 Casorati–Weierstrass theorem:
 ```@example
 using CairoMakie, DomainColoring # hide
@@ -201,8 +202,22 @@ nothing # hide
 The harshness of these white an black areas can be changed using the
 `sigma` parameter, try for instance:
 ```julia
-domaincolor(z -> exp(1/z), .1, abs=(base=Inf, sigma=0.001))
+domaincolor(z -> exp(1/z), .1, abs=(sigma=0.001,))
 ```
 
-Finally, if one wants any of the previous plots without coloring the
-phase angle, they can use `angle = false`.
+If one wants to change the coloring of the phase angle, they can pass a
+`ColorScheme` (as an object or by name, see [their
+documentation](https://juliagraphics.github.io/ColorSchemes.jl/stable/catalogue/))
+or a function `θ -> Color`, to `angle`. As an example of the latter, we
+can add a discretization effect:
+```@example
+using CairoMakie, DomainColoring # hide
+discrangle(θ) = DomainColoring.labsweep(π/10 * floor(10/π * θ))
+domaincolor(tan, angle=discrangle)
+save("dscangle.png", current_figure()) # hide
+nothing # hide
+```
+![](dscangle.png)
+
+Finally, if no coloring of the phase is wanted, we can set
+`angle = false`.

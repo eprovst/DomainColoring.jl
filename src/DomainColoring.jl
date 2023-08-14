@@ -125,6 +125,30 @@ function shadedplot(
             interpolate=true, axis=(autolimitaspect=1,),)
 end
 
+"""
+    DomainColoring.labsweep(θ)
+
+Maps a phase angle **`θ`** to a color in CIE L\\*a\\*b\\* space by
+taking
+
+```math
+\\begin{aligned}
+      L^* &= 67 - 12 \\cos(3\\theta), \\\\
+      a^* &= 46 \\cos(\\theta + .4) - 3, \\quad\\text{and} \\\\
+      b^* &= 46 \\sin(\\theta + .4) - 16.
+  \\end{aligned}
+```
+
+See [Phase Wheel](@ref) for more information.
+"""
+function labsweep(θ)
+    θ = mod(θ, 2π)
+    Lab(67 - 12cos(3θ),
+        46cos(θ + .4) - 3,
+        46sin(θ + .4) + 16)
+end
+
+# Grid types supported by _grid
 @enum GridType begin
     CheckerGrid
     LineGrid
@@ -219,6 +243,15 @@ _grid(type, w, arg::Bool) = arg ? _grid(type, w) : 1.0
 
 _grid(type, w, arg) = _grid(type, w; rect=arg)
 
+# Implements the angle coloring logic for shaders.
+_color_angle(w, arg::Bool) = arg ? labsweep(angle(w)) : Lab(80.0, 0.0, 0.0)
+
+_color_angle(w, arg::Function) = arg(mod(angle(w), 2π))
+
+_color_angle(w, arg::ColorScheme) = get(arg, mod(angle(w) / 2π, 1))
+
+_color_angle(w, arg::Symbol) = _color_angle(w, ColorSchemes.colorschemes[arg])
+
 # Implements the magnitude logic for `domaincolorshader`
 # isnothing(transform) gives the default log, and saves us
 # from compiling an anonymous function each call. See `domaincolor`
@@ -228,12 +261,12 @@ function _add_magnitude(
         c;
         base = ℯ,
         transform = nothing,
-        sigma = 0.02,
+        sigma = nothing,
     )
 
     # add magnitude if requested
     if base > 0
-        if isfinite(base)
+        if isfinite(base) && isnothing(sigma)
             if isnothing(transform)
                 m = log(base, abs(w))
             else
@@ -241,6 +274,7 @@ function _add_magnitude(
             end
             isfinite(m) && (c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b))
         else
+            isnothing(sigma) && (sigma = 0.02)
             m = log(abs(w))
             t = isfinite(m) ? exp(-sigma*m^2) : 0.0
             g = 100.0(m > 0)
@@ -254,30 +288,9 @@ _add_magnitude(w, c, args::NamedTuple) = _add_magnitude(w, c; args...)
 
 _add_magnitude(w, c, arg::Bool) = arg ? _add_magnitude(w, c) : c
 
-_add_magnitude(w, c, arg) = _add_magnitude(w, c, base=arg)
+_add_magnitude(w, c, arg::Function) = _add_magnitude(w, c; transform=arg)
 
-"""
-    DomainColoring.labsweep(θ)
-
-Maps a phase angle **`θ`** to a color in CIE L\\*a\\*b\\* space by
-taking
-
-```math
-\\begin{aligned}
-      L^* &= 67 - 12 \\cos(3\\theta), \\\\
-      a^* &= 46 \\cos(\\theta + .4) - 3, \\quad\\text{and} \\\\
-      b^* &= 46 \\sin(\\theta + .4) - 16.
-  \\end{aligned}
-```
-
-See [Phase Wheel](@ref) for more information.
-"""
-function labsweep(θ)
-    θ = mod(θ, 2π)
-    Lab(67 - 12cos(3θ),
-        46cos(θ + .4) - 3,
-        46sin(θ + .4) + 16)
-end
+_add_magnitude(w, c, arg) = _add_magnitude(w, c; base=arg)
 
 """
     DomainColoring.domaincolorshader(
@@ -307,8 +320,13 @@ function domaincolorshader(
         (grid  isa Bool) && (grid  = true)
     end
 
+    # short circuit conversions
+    if (abs isa Bool) && !abs && (grid isa Bool) && !grid
+        return _color_angle(w, angle)
+    end
+
     # phase color
-    c = angle ? labsweep(Base.angle(w)) : Lab(80.0, 0.0, 0.0)
+    c = convert(Lab, _color_angle(w, angle))
 
     # add magnitude
     c = _add_magnitude(w, c, abs)
@@ -355,7 +373,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
-- **`angle`** toggles coloring of the phase angle.
+- **`angle`** toggles coloring of the phase angle. Can also be set to
+  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
 
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves. If set to a number,
@@ -365,7 +384,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   parameters `base`, `transform`, or `sigma`. `base` changes the base of
   the logarithm, as before. `transform` is the function applied to the
   magnitude (`m -> log(base, m)` by default), and `sigma` changes the
-  rate at which zeros and poles are colored when `base = Inf`.
+  rate at which zeros and poles are colored and implies `base = Inf`.
 
 - **`grid`** plots points with integer real or imaginary part as black
   dots. More complicated arguments can be passed as a named tuple in a
