@@ -118,20 +118,24 @@ function shadedplot(
 
     limits = _expandlimits(limits)
 
-    r = [limits[1], limits[2]]
-    i = [limits[3], limits[4]]
     # images have inverted y and flip x and y in their storage
-    heatmap(r, reverse(i), renderimage(f, shader, limits, pixels)';
+    r = [limits[1], limits[2]]
+    i = [limits[4], limits[3]]
+    heatmap(r, i, renderimage(f, shader, limits, pixels)';
             interpolate=true, axis=(autolimitaspect=1,),)
 end
 
+@enum GridType begin
+    CheckerGrid
+    LineGrid
+end
 
 # Logic for grid like plotting elements, somewhat ugly, but it works.
-# `w` is the complex value, `checker` is a boolean for the others see
+# `w` is the complex value, `type` is the type of grid to make
 # `checkerplot`.
 function _grid(
-        w,
-        checker;
+        type,
+        w;
         real = false,
         imag = false,
         rect = false,
@@ -175,38 +179,45 @@ function _grid(
     end
 
     # set defaults
-    (real isa Bool && real) && (real = 1)
-    (imag isa Bool && imag) && (imag = 1)
+    (real  isa Bool && real)  && (real = 1)
+    (imag  isa Bool && imag)  && (imag = 1)
     (angle isa Bool && angle) && (angle = 6)
-    (abs isa Bool && abs) && (abs = 1)
+    (abs   isa Bool && abs)   && (abs = 1)
 
     g = 1.0
-    if real > 0 && isfinite(4*real*Base.real(w))
-        g *= sin(real*π*Base.real(w))
+    if real > 0
+        r = real * π * Base.real(w)
+        isfinite(r) && (g *= sin(r))
     end
-    if imag > 0 && isfinite(4*imag*Base.imag(w))
-        g *= sin(imag*π*Base.imag(w))
+    if imag > 0
+        i = imag * π * Base.imag(w)
+        isfinite(i) && (g *= sin(i))
     end
-    if angle > 0 && isfinite(angle*Base.angle(w))
-        checker && @assert iseven(angle) "Rate of angle has to be even."
-        g *= sin(angle/2*Base.angle(w))
+    if angle > 0
+        @assert mod(angle, 1) ≈ 0 "Rate of angle has to be an integer."
+        angle = round(angle)
+        (type == CheckerGrid) && @assert iseven(angle) "Rate of angle has to be even."
+
+        a = angle / 2 * Base.angle(w)
+        isfinite(a) && (g *= sin(a))
     end
-    if abs > 0 && isfinite(4*abs*log(Base.abs(w)))
-        g *= sin(abs*π*log(Base.abs(w)))
+    if abs > 0
+        m = abs * π * log(Base.abs(w))
+        isfinite(m) && (g *= sin(m))
     end
 
-    if checker
-        min(1, sign(g) + 1)
-    else
+    if type == CheckerGrid
+        float(g > 0)
+    elseif type == LineGrid
         Base.abs(g)^0.06
     end
 end
 
-_grid(w, checker, args::NamedTuple) = _grid(w, checker; args...)
+_grid(type, w, args::NamedTuple) = _grid(type, w; args...)
 
-_grid(w, checker, arg::Bool) = arg ? _grid(w, checker) : 1.0
+_grid(type, w, arg::Bool) = arg ? _grid(type, w) : 1.0
 
-_grid(w, checker, arg) = _grid(w, checker; rect=arg)
+_grid(type, w, arg) = _grid(type, w; rect=arg)
 
 # Implements the magnitude logic for `domaincolorshader`
 # isnothing(transform) gives the default log, and saves us
@@ -215,7 +226,7 @@ _grid(w, checker, arg) = _grid(w, checker; rect=arg)
 function _add_magnitude(
         w,
         c;
-        base = exp(1),
+        base = ℯ,
         transform = nothing,
         sigma = 0.02,
     )
@@ -231,11 +242,9 @@ function _add_magnitude(
             isfinite(m) && (c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b))
         else
             m = log(abs(w))
-            if isfinite(m)
-                t = exp(-sigma*m^2)
-                g = 100(sign(m)/2 + .5)
-                c = Lab((1 - t)g + t*c.l, t*c.a, t*c.b)
-            end
+            t = isfinite(m) ? exp(-sigma*m^2) : 0.0
+            g = 100.0(m > 0)
+            c = Lab((1 - t)g + t*c.l, t*c.a, t*c.b)
         end
     end
     return c
@@ -265,12 +274,15 @@ See [Phase Wheel](@ref) for more information.
 """
 function labsweep(θ)
     θ = mod(θ, 2π)
-    Lab(67 - 12cos(3θ), 46cos(θ + .4) - 3, 46sin(θ + .4) + 16)
+    Lab(67 - 12cos(3θ),
+        46cos(θ + .4) - 3,
+        46sin(θ + .4) + 16)
 end
 
 """
     DomainColoring.domaincolorshader(
         w :: Complex;
+        angle = true,
         abs = false,
         grid = false,
         all = false,
@@ -282,6 +294,7 @@ For documentation of the remaining arguments see [`domaincolor`](@ref).
 """
 function domaincolorshader(
         w;
+        angle = true,
         abs = false,
         grid = false,
         all = false,
@@ -289,12 +302,13 @@ function domaincolorshader(
 
     # user wants full domain coloring
     if all
-        abs = true
-        grid = true
+        (angle isa Bool) && (angle = true)
+        (abs   isa Bool) && (abs   = true)
+        (grid  isa Bool) && (grid  = true)
     end
 
     # phase color
-    c = labsweep(angle(w))
+    c = angle ? labsweep(Base.angle(w)) : Lab(80.0, 0.0, 0.0)
 
     # add magnitude
     c = _add_magnitude(w, c, abs)
@@ -302,7 +316,7 @@ function domaincolorshader(
     # add integer grid if requested
     if !(grid isa Bool) || grid
         # slightly overattenuate to compensate global darkening
-        g = 1.06_grid(w, false, grid)
+        g = 1.06_grid(LineGrid, w, grid)
         c = mapc(x -> g*x, c)
     end
 
@@ -314,6 +328,7 @@ end
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
+        angle = true,
         abs = false,
         grid = false,
         all = false,
@@ -340,6 +355,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
+- **`angle`** toggles coloring of the phase angle.
+
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves. If set to a number,
   this will be used as base of the logarithm instead, if set to `Inf`,
@@ -360,13 +377,19 @@ function domaincolor(
         f,
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
+        angle = true,
         abs = false,
         grid = false,
         all = false,
     )
 
+    # issue warning if everything is inactive
+    if Base.all(b -> b isa Bool && !b, [angle, abs, grid, all])
+        @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
+    end
+
     shadedplot(f, w -> domaincolorshader(
-                    w; abs, grid, all
+                    w; angle, abs, grid, all
                   ), limits, pixels)
 end
 
@@ -497,7 +520,7 @@ function checkerplotshader(
         polar = false,
     )
 
-    g = _grid(w, true; real, imag, rect, angle, abs, polar)
+    g = _grid(CheckerGrid, w; real, imag, rect, angle, abs, polar)
     return Gray(0.9g + 0.08)
 end
 

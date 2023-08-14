@@ -203,3 +203,6 @@ The harshness of these white an black areas can be changed using the
 ```julia
 domaincolor(z -> exp(1/z), .1, abs=(base=Inf, sigma=0.001))
 ```
+
+Finally, if one wants any of the previous plots without coloring the
+phase angle, they can use `angle = false`.

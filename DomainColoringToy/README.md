@@ -9,5 +9,5 @@
 </p>
 <p>
   Interactive domain colorings and checker plots of complex functions in Julia using smooth colors,
-  based on <a href="https://makie.org/">MakieGL</a>.
+  based on <a href="https://makie.org/">GLMakie</a>.
 </p>

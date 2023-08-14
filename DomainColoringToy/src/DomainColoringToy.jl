@@ -110,6 +110,7 @@ end
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        angle = true,
         abs = false,
         grid = false,
         all = false,
@@ -137,6 +138,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
 
+- **`angle`** toggles coloring of the phase angle.
+
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves. If set to a number,
   this will be used as base of the logarithm instead, if set to `Inf`,
@@ -157,13 +160,20 @@ function domaincolor(
         f,
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        angle = true,
         abs = false,
         grid = false,
         all = false,
     )
 
+    # issue warning if everything is inactive
+    if Base.all(b -> b isa Bool && !b, [angle, abs, grid, all])
+        @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
+    end
+
     interactiveshadedplot(
-        f, w -> DC.domaincolorshader(w; abs, grid, all), limits, pixels)
+        f, w -> DC.domaincolorshader(w; angle, abs, grid, all),
+        limits, pixels)
 end
 
 """
