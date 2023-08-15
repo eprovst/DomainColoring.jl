@@ -18,9 +18,15 @@ direction. A list of four elements are interpreted as
 ``({\rm Re}_{\rm min}, {\rm Re}_{\rm max}, {\rm Im}_{\rm min},
 {\rm Im}_{\rm max})``.
 
-Finally all plots have a keyword argument `pixels` by which one can
-specify the number of samples in respectively the real and imaginary
-direction. If only one number is provided it is used for both.
+All plots have a keyword argument `pixels` by which one can specify the
+number of samples in respectively the real and imaginary direction. If
+only one number is provided it is used for both.
+
+Finally, any remaining keywords are passed to Makie. This, together with
+the modifying variants (`domaincolor!`, `checkerplot!`, etc.), makes the
+plotting routines in this library behave similarly to other Makie plot
+types. For more information we refer to [their
+documenation](https://docs.makie.org/).
 
 The remainder of this page gives a quick overview of the main plotting
 functions of `DomainColoring.jl`.
