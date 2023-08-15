@@ -155,6 +155,9 @@ nothing # hide
 ```
 ![](cppolarsin.png)
 
+Finally, `hicontrast = true` can be used to plot in black and white
+instead of the slightly softer defaults.
+
 ## The [`domaincolor`](@ref) function, revisited
 
 Like [`checkerplot`](@ref), `abs` and `grid` also accept numbers.

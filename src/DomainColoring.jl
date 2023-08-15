@@ -475,8 +475,7 @@ domaincolor, domaincolor!
             @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
         end
         w -> domaincolorshader(w; angle, abs, grid, all)
-    end
-)
+    end)
 
 """
     DomainColoring.pdphaseplotshader(w :: Complex)
@@ -589,6 +588,7 @@ tphaseplot, tphaseplot!
         angle = false,
         abs = false,
         polar = false,
+        hicontrast = false,
     )
 
 Takes a complex value **`w`** and shades it as in a checker plot.
@@ -603,10 +603,16 @@ function checkerplotshader(
         angle = false,
         abs = false,
         polar = false,
+        hicontrast = false,
     )
 
     g = _grid(CheckerGrid, w; real, imag, rect, angle, abs, polar)
-    return Gray(0.9g + 0.08)
+
+    if hicontrast
+        Gray(g)
+    else
+        Gray(0.9g + 0.08)
+    end
 end
 
 export checkerplot, checkerplot!
@@ -622,6 +628,7 @@ export checkerplot, checkerplot!
         angle = false,
         abs = false,
         polar = false,
+        hicontrast = false,
         kwargs...
     )
 
@@ -660,6 +667,8 @@ Numbers can be provided instead of booleans to override the default rates.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
 
+- **`hicontrast`** uses black and white instead of the softer defaults.
+
 Remaining keyword arguments are passed to Makie.
 """
 checkerplot, checkerplot!
@@ -670,9 +679,10 @@ checkerplot, checkerplot!
      rect = false,
      angle = false,
      abs = false,
-     polar = false),
+     polar = false,
+     hicontrast = false),
     w -> checkerplotshader(
-        w; real, imag, rect, angle, abs, polar
+        w; real, imag, rect, angle, abs, polar, hicontrast
     ))
 
 end

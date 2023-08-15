@@ -329,6 +329,8 @@ Numbers can be provided instead of booleans to override the default rates.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
 
+- **`hicontrast`** uses black and white instead of the softer defaults.
+
 Remaining keyword arguments are passed to Makie.
 """
 function checkerplot(
@@ -341,11 +343,12 @@ function checkerplot(
         angle = false,
         abs = false,
         polar = false,
+        hicontrast = false,
         kwargs...
     )
 
     interactiveshadedplot(f, w -> DC.checkerplotshader(
-            w; real, imag, rect, angle, abs, polar
+            w; real, imag, rect, angle, abs, polar, hicontrast
         ), limits, pixels; kwargs...)
 end
 
