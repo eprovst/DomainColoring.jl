@@ -42,18 +42,28 @@ auto updating.
   number of pixels along the real and imaginary axis, taking the same
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
+
+Keyword arguments are passed to Makie.
 """
 function interactiveshadedplot(
         f,
         shader,
         limits = (-1, 1, -1, 1),
-        pixels = (480, 480),
+        pixels = (480, 480);
+        kwargs...
     )
 
     # sanitize input
     pixels == :auto && (pixels = (:auto, :auto))
     length(pixels) == 1 && (pixels = (pixels, pixels))
     limits = DC._expandlimits(limits)
+
+    # parse Makie options
+    defaults = Attributes(
+        interpolate = true,
+        axis = (autolimitaspect = 1,)
+    )
+    attr = merge(Attributes(; kwargs...), defaults)
 
     # setup observables to be used by update
     img = Observable(
@@ -66,12 +76,12 @@ function interactiveshadedplot(
     # setup plot
     # transpose as x and y are swapped in images
     # reverse as y is reversed in images
-    fg, ax = heatmap(xl, lift(reverse, yl), lift(adjoint, img);
-                     interpolate=true, axis=(autolimitaspect=1,))
+    plt = heatmap(xl, lift(reverse, yl), lift(adjoint, img);
+                  attr...)
 
     # set default limits
-    xlims!(ax, limits[1], limits[2])
-    ylims!(ax, limits[3], limits[4])
+    xlims!(plt.axis, limits[1], limits[2])
+    ylims!(plt.axis, limits[3], limits[4])
 
     # update loop
     function update(lims, res)
@@ -95,14 +105,14 @@ function interactiveshadedplot(
     end
 
     # initial render
-    lims = ax.finallimits
-    res = ax.scene.camera.resolution
+    lims = plt.axis.finallimits
+    res = plt.axis.scene.camera.resolution
     update(lims[], res[])
 
     # observe updates
     onany(update, lims, res)
 
-    return fg
+    return plt
 end
 
 """
@@ -156,6 +166,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   similar fashion to [`checkerplot`](@ref).
 
 - **`all`** is a shortcut for `abs = true` and `grid = true`.
+
+Remaining keyword arguments are passed to Makie.
 """
 function domaincolor(
         f,
@@ -165,16 +177,17 @@ function domaincolor(
         abs = false,
         grid = false,
         all = false,
+        kwargs...
     )
 
     # issue warning if everything is inactive
-    if Base.all(b -> b isa Bool && !b, [angle, abs, grid, all])
+    if Base.all(b -> b isa Bool && !b, (angle, abs, grid, all))
         @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
     end
 
     interactiveshadedplot(
         f, w -> DC.domaincolorshader(w; angle, abs, grid, all),
-        limits, pixels)
+        limits, pixels; kwargs...)
 end
 
 """
@@ -205,14 +218,18 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
   number of pixels along the real and imaginary axis, taking the same
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
+
+Remaining keyword arguments are passed to Makie.
 """
 function pdphaseplot(
         f,
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        kwargs...
     )
 
-    interactiveshadedplot(f, DC.pdphaseplotshader, limits, pixels)
+    interactiveshadedplot(f, DC.pdphaseplotshader,
+                          limits, pixels; kwargs...)
 end
 
 """
@@ -243,14 +260,18 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
   number of pixels along the real and imaginary axis, taking the same
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
+
+Remaining keyword arguments are passed to Makie.
 """
 function tphaseplot(
         f,
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        kwargs...
     )
 
-    interactiveshadedplot(f, DC.tphaseplotshader, limits, pixels)
+    interactiveshadedplot(f, DC.tphaseplotshader,
+                          limits, pixels; kwargs...)
 end
 
 """
@@ -302,6 +323,8 @@ Numbers can be provided instead of booleans to override the default rates.
   unit increase of the natural logarithm of the magnitude.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
+
+Remaining keyword arguments are passed to Makie.
 """
 function checkerplot(
         f,
@@ -313,12 +336,12 @@ function checkerplot(
         angle = false,
         abs = false,
         polar = false,
+        kwargs...
     )
 
     interactiveshadedplot(f, w -> DC.checkerplotshader(
             w; real, imag, rect, angle, abs, polar
-        ), limits, pixels,
-    )
+        ), limits, pixels; kwargs...)
 end
 
 end

@@ -13,8 +13,7 @@
 module DomainColoring
 
 using MakieCore, ColorTypes, ColorSchemes
-
-export domaincolor, checkerplot, pdphaseplot, tphaseplot
+import MakieCore: Attributes
 
 # Implements the `limits` expansion typical of the functions in this
 # module, additionally normalizes to tuples.
@@ -109,20 +108,68 @@ plot.
 
 For documentation of the remaining arguments see [`renderimage`](@ref).
 """
-function shadedplot(
-        f,
-        shader,
-        limits = (-1, 1, -1, 1),
-        pixels = (720, 720),
-    )
+shadedplot, shadedplot!
 
-    limits = _expandlimits(limits)
+for (modifying, target) in
+    ((false, ()),
+     (true, ()),
+     (true, (:target,)))
 
-    # images have inverted y and flip x and y in their storage
-    r = [limits[1], limits[2]]
-    i = [limits[4], limits[3]]
-    heatmap(r, i, renderimage(f, shader, limits, pixels)';
-            interpolate=true, axis=(autolimitaspect=1,),)
+    fname = modifying ? :shadedplot! : :shadedplot
+    hname = modifying ? :heatmap! : :heatmap
+    @eval begin
+        function $fname(
+               $(target...),
+               f :: Function,
+               shader :: Function,
+               limits = (-1, 1, -1, 1),
+               pixels = (720, 720);
+               kwargs...
+            )
+
+            limits = _expandlimits(limits)
+
+            # parse Makie options
+            defaults = Attributes(
+                interpolate = true,
+                $(modifying || Expr(:kw, :axis, (autolimitaspect = 1,)))
+            )
+            attr = merge(Attributes(; kwargs...), defaults)
+
+            # images have inverted y and flip x and y in their storage
+            r = [limits[1], limits[2]]
+            i = [limits[4], limits[3]]
+            $hname($(target...), r, i,
+                   renderimage(f, shader, limits, pixels)'; attr...)
+        end
+    end
+end
+
+# Internal macro emitting needed variations of shadedplot based plots
+macro shadedplot(basename, sargs, shader)
+    modifname = Symbol(basename, '!')
+    # interpret sargs as keyword arguments
+    sargs = [Expr(:kw, p...) for p in pairs(eval(sargs))]
+
+    for (fname, sname, target) in
+        ((basename,  :shadedplot,  ()),
+         (modifname, :shadedplot!, ()),
+         (modifname, :shadedplot!, (:target,)))
+        @eval begin
+            function $fname(
+                    $(target...),
+                    f :: Function,
+                    limits = (-1, 1, -1, 1);
+                    pixels = (720, 720),
+                    $(sargs...),
+                    kwargs...
+                )
+
+                $sname($(target...), f, $shader,
+                       limits, pixels; kwargs...)
+            end
+        end
+    end
 end
 
 """
@@ -170,7 +217,7 @@ function _grid(
 
     # set carthesian grid if no options given
     if all(b -> b isa Bool && !b,
-           [real, imag, rect, angle, abs, polar])
+           (real, imag, rect, angle, abs, polar))
         rect = true
     end
 
@@ -341,6 +388,8 @@ function domaincolorshader(
     return c
 end
 
+export domaincolor, domaincolor!
+
 """
     domaincolor(
         f :: "Complex -> Complex",
@@ -391,26 +440,25 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   similar fashion to [`checkerplot`](@ref).
 
 - **`all`** is a shortcut for `abs = true` and `grid = true`.
+
+Remaining keyword arguments are passed to Makie.
 """
-function domaincolor(
-        f,
-        limits = (-1, 1, -1, 1);
-        pixels = (720, 720),
-        angle = true,
-        abs = false,
-        grid = false,
-        all = false,
-    )
+domaincolor, domaincolor!
 
-    # issue warning if everything is inactive
-    if Base.all(b -> b isa Bool && !b, [angle, abs, grid, all])
-        @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
+@shadedplot(
+    domaincolor,
+    (angle = true,
+     abs = false,
+     grid = false,
+     all = false),
+    begin
+        # issue warning if everything is inactive
+        if Base.all(b -> b isa Bool && !b, (angle, abs, grid, all))
+            @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
+        end
+        w -> domaincolorshader(w; angle, abs, grid, all)
     end
-
-    shadedplot(f, w -> domaincolorshader(
-                    w; angle, abs, grid, all
-                  ), limits, pixels)
-end
+)
 
 """
     DomainColoring.pdphaseplotshader(w :: Complex)
@@ -425,6 +473,8 @@ function pdphaseplotshader(w)
     get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
         mod(-angle(w) / 2π + .5, 1))
 end
+
+export pdphaseplot, pdphaseplot!
 
 """
     pdphaseplot(
@@ -453,15 +503,12 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
 - **`pixels`** is the number of pixels to compute in, respectively, the
   real and imaginary axis, taking the same for both if only one number
   is provided.
-"""
-function pdphaseplot(
-        f,
-        limits = (-1, 1, -1, 1);
-        pixels = (720, 720),
-    )
 
-    shadedplot(f, pdphaseplotshader, limits, pixels)
-end
+Remaining keyword arguments are passed to Makie.
+"""
+pdphaseplot, pdphaseplot!
+
+@shadedplot(pdphaseplot, (), pdphaseplotshader)
 
 """
     DomainColoring.tphaseplotshader(w :: Complex)
@@ -476,6 +523,8 @@ function tphaseplotshader(w)
     get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
         mod(-angle(w) / 2π + .5, 1))
 end
+
+export tphaseplot, tphaseplot!
 
 """
     tphaseplot(
@@ -504,15 +553,12 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 - **`pixels`** is the number of pixels to compute in, respectively, the
   real and imaginary axis, taking the same for both if only one number
   is provided.
-"""
-function tphaseplot(
-        f,
-        limits = (-1, 1, -1, 1);
-        pixels = (720, 720),
-    )
 
-    shadedplot(f, tphaseplotshader, limits, pixels)
-end
+Remaining keyword arguments are passed to Makie.
+"""
+tphaseplot, tphaseplot!
+
+@shadedplot(tphaseplot, (), tphaseplotshader)
 
 """
     DomainColoring.checkerplotshader(
@@ -542,6 +588,8 @@ function checkerplotshader(
     g = _grid(CheckerGrid, w; real, imag, rect, angle, abs, polar)
     return Gray(0.9g + 0.08)
 end
+
+export checkerplot, checkerplot!
 
 """
     checkerplot(
@@ -590,22 +638,20 @@ Numbers can be provided instead of booleans to override the default rates.
   unit increase of the natural logarithm of the magnitude.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
-"""
-function checkerplot(
-        f,
-        limits = (-1, 1, -1, 1);
-        pixels = (720, 720),
-        real = false,
-        imag = false,
-        rect = false,
-        angle = false,
-        abs = false,
-        polar = false,
-    )
 
-    shadedplot(f, w -> checkerplotshader(
-                    w; real, imag, rect, angle, abs, polar
-                  ), limits, pixels)
-end
+Remaining keyword arguments are passed to Makie.
+"""
+checkerplot, checkerplot!
+
+@shadedplot(checkerplot,
+    (real = false,
+     imag = false,
+     rect = false,
+     angle = false,
+     abs = false,
+     polar = false),
+    w -> checkerplotshader(
+        w; real, imag, rect, angle, abs, polar
+    ))
 
 end
