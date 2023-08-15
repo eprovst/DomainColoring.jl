@@ -117,6 +117,8 @@ for (modifying, target) in
 
     fname = modifying ? :shadedplot! : :shadedplot
     hname = modifying ? :heatmap! : :heatmap
+    axis = modifying ? () : (Expr(:kw, :axis, (autolimitaspect = 1,)),)
+
     @eval begin
         function $fname(
                $(target...),
@@ -130,9 +132,9 @@ for (modifying, target) in
             limits = _expandlimits(limits)
 
             # parse Makie options
-            defaults = Attributes(
+            defaults = Attributes(;
                 interpolate = true,
-                $(modifying || Expr(:kw, :axis, (autolimitaspect = 1,)))
+                $(axis...)
             )
             attr = merge(Attributes(; kwargs...), defaults)
 
