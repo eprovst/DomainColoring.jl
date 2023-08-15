@@ -100,13 +100,16 @@ end
         f :: "Complex -> Complex",
         shader :: "Complex -> Color",
         limits = (-1, 1, -1, 1),
-        pixels = (720, 720),
+        pixels = (720, 720);
+        kwargs...
     )
 
 Takes a complex function **`f`** and a **`shader`** and produces a Makie
 plot.
 
 For documentation of the remaining arguments see [`renderimage`](@ref).
+
+Keyword arguments are passed to Makie.
 """
 shadedplot, shadedplot!
 
@@ -147,11 +150,23 @@ for (modifying, target) in
     end
 end
 
-# Internal macro emitting needed variations of shadedplot based plots
-macro shadedplot(basename, sargs, shader)
+"""
+    DomainColoring.@shadedplot(basename, shaderkwargs, shader)
+
+Macro emitting implementations of **`basename`** and **`basename!`** in
+a similar fashion to the other plotting routines in this library, see
+for instance [`domaincolor`](@ref) and [`domaincolor!`](@ref).
+
+**`shaderkwargs`** is a named tuple setting keyword arguments used in
+the expression **`shader`**. The result of **`shader`** should be a
+function `Complex -> Color` and is used to shade the resulting plot.
+
+See the source for examples.
+"""
+macro shadedplot(basename, shaderkwargs, shader)
     modifname = Symbol(basename, '!')
     # interpret sargs as keyword arguments
-    sargs = [Expr(:kw, p...) for p in pairs(eval(sargs))]
+    skwargs = [Expr(:kw, p...) for p in pairs(eval(shaderkwargs))]
 
     for (fname, sname, target) in
         ((basename,  :shadedplot,  ()),
@@ -163,7 +178,7 @@ macro shadedplot(basename, sargs, shader)
                     f :: Function,
                     limits = (-1, 1, -1, 1);
                     pixels = (720, 720),
-                    $(sargs...),
+                    $(skwargs...),
                     kwargs...
                 )
 
@@ -401,6 +416,7 @@ export domaincolor, domaincolor!
         abs = false,
         grid = false,
         all = false,
+        kwargs...
     )
 
 Takes a complex function and produces it's domain coloring as a Makie
@@ -483,6 +499,7 @@ export pdphaseplot, pdphaseplot!
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
+        kwargs...
     )
 
 Takes a complex valued function and produces a phase plot as a Makie
@@ -533,6 +550,7 @@ export tphaseplot, tphaseplot!
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
+        kwargs...
     )
 
 Takes a complex valued function and produces a phase plot as a Makie
@@ -604,6 +622,7 @@ export checkerplot, checkerplot!
         angle = false,
         abs = false,
         polar = false,
+        kwargs...
     )
 
 Takes a complex function and produces a checker plot as a Makie plot.

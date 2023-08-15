@@ -22,7 +22,8 @@ export domaincolor, checkerplot, pdphaseplot, tphaseplot
         f :: "Complex -> Complex",
         shader :: "Complex -> Color",
         limits = (-1, 1, -1, 1),
-        pixels = (480, 480),
+        pixels = (480, 480);
+        kwargs...
     )
 
 Takes a complex function and a shader and produces a GLMakie plot with
@@ -124,6 +125,7 @@ end
         abs = false,
         grid = false,
         all = false,
+        kwargs...
     )
 
 Takes a complex function and produces it's domain coloring as an
@@ -195,6 +197,7 @@ end
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        kwargs...
     )
 
 Takes a complex valued function and produces a phase plot as an
@@ -237,6 +240,7 @@ end
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        kwargs...
     )
 
 Takes a complex valued function and produces a phase plot as an
@@ -285,6 +289,7 @@ end
         angle = false,
         abs = false,
         polar = false,
+        kwargs...
     )
 
 Takes a complex function and produces a checker plot as an interactive
