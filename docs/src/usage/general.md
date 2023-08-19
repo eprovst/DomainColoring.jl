@@ -43,6 +43,7 @@ following.
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5))
+resize!(current_figure(), 620, 340) #hide
 save("dcsincphase.png", current_figure()) # hide
 nothing # hide
 ```
@@ -55,6 +56,7 @@ increase of lightness is taken proportional to the fractional part of
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5), abs=true)
+resize!(current_figure(), 620, 340) #hide
 save("dcsincabs.png", current_figure()) # hide
 nothing # hide
 ```
@@ -65,6 +67,7 @@ of ``f(z)`` is integer by setting `grid = true`.
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5), grid=true)
+resize!(current_figure(), 620, 340) #hide
 save("dcsincgrid.png", current_figure()) # hide
 nothing # hide
 ```
@@ -75,6 +78,7 @@ Of course these options can be combined, the common combination of
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5), all=true)
+resize!(current_figure(), 620, 340) #hide
 save("dcsincall.png", current_figure()) # hide
 nothing # hide
 ```
@@ -93,6 +97,7 @@ checkerplot of the identity function makes this clearer.
 ```@example
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5)
+resize!(current_figure(), 620, 600) #hide
 save("cprect.png", current_figure()) # hide
 nothing # hide
 ```
@@ -104,6 +109,7 @@ previous example.
 ```@example
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5, real=true)
+resize!(current_figure(), 620, 600) #hide
 save("cpreal.png", current_figure()) # hide
 nothing # hide
 ```
@@ -118,6 +124,7 @@ six bands per ``2\pi`` increase of ``\arg(f(z))``.
 ```@example
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5, polar=true)
+resize!(current_figure(), 620, 600) #hide
 save("cppolar.png", current_figure()) # hide
 nothing # hide
 ```
@@ -131,14 +138,18 @@ For example, we get for magnitude:
 ```@example
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5, abs=5)
+resize!(current_figure(), 620, 600) #hide
 save("cpabs.png", current_figure()) # hide
 nothing # hide
 ```
 ![](cpabs.png)
+
 and for phase:
+
 ```@example
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5, angle=10)
+resize!(current_figure(), 620, 600) #hide
 save("cpangle.png", current_figure()) # hide
 nothing # hide
 ```
@@ -150,6 +161,7 @@ rate will be chosen for `angle`, for instance:
 ```@example
 using CairoMakie, DomainColoring # hide
 checkerplot(sin, (5, 2), polar=4)
+resize!(current_figure(), 620, 280) #hide
 save("cppolarsin.png", current_figure()) # hide
 nothing # hide
 ```
@@ -170,10 +182,12 @@ analogous example to the final one of last section, is given by:
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sin, (5, 2), grid=(polar=4,))
+resize!(current_figure(), 620, 280) #hide
 save("dcpolarsin.png", current_figure()) # hide
 nothing # hide
 ```
 ![](dcpolarsin.png)
+
 (Note: unlike before, the rate of `angle` need not be even for grids.)
 
 The `abs` argument accepts a different basis from the default ``e``, if
@@ -181,6 +195,7 @@ we for instance wanted to see orders of magnitude, we could look at:
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> z^3, 5, abs=10)
+resize!(current_figure(), 620, 600) #hide
 save("dcordermag.png", current_figure()) # hide
 nothing # hide
 ```
@@ -191,7 +206,8 @@ magnitude itself, they can use the `transform` option, or pass a
 function directly to `abs`, for instance:
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(sqrt, (-1, 20, -5, 5), abs=z->z)
+domaincolor(sqrt, (-1, 19, -4, 4), abs=z->z)
+resize!(current_figure(), 620, 280) #hide
 save("dclinmag.png", current_figure()) # hide
 nothing # hide
 ```
@@ -203,6 +219,7 @@ Casorati–Weierstrass theorem:
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> exp(1/z), .1, abs=Inf)
+resize!(current_figure(), 620, 600) #hide
 save("cwthm.png", current_figure()) # hide
 nothing # hide
 ```
@@ -223,6 +240,7 @@ can add a discretization effect:
 using CairoMakie, DomainColoring # hide
 discrangle(θ) = DomainColoring.labsweep(π/10 * floor(10/π * θ))
 domaincolor(tan, angle=discrangle)
+resize!(current_figure(), 620, 600) #hide
 save("dscangle.png", current_figure()) # hide
 nothing # hide
 ```

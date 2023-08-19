@@ -60,6 +60,7 @@ Then a simple phase plot can be made using
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> 2z + 1)
+resize!(current_figure(), 620, 600) #hide
 save("simplephaseexample.png", current_figure()) # hide
 nothing # hide
 ```
@@ -80,6 +81,7 @@ multiplicity. A pole of multiplicity two gives for instance:
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> 1 / z^2)
+resize!(current_figure(), 620, 600) #hide
 save("simplepoleexample.png", current_figure()) # hide
 nothing # hide
 ```
@@ -93,6 +95,7 @@ axis, as we can see on the following figure.
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sqrt, [-10, 2, -2, 2])
+resize!(current_figure(), 620, 250) #hide
 save("sqrtexample.png", current_figure()) # hide
 nothing # hide
 ```
@@ -115,6 +118,7 @@ of the essential singularity of ``e^\frac{1}{z}``.
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> exp(1/z), 0.5)
+resize!(current_figure(), 620, 600) #hide
 save("essentialsingexample.png", current_figure()) # hide
 nothing # hide
 ```
@@ -133,6 +137,7 @@ options, and the other provided plotting function [`checkerplot`](@ref).
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> im*z^3-1, 2.5, all=true)
+resize!(current_figure(), 620, 600) #hide
 save("logoexample.png", current_figure()) # hide
 nothing # hide
 ```

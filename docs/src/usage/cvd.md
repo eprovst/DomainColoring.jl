@@ -22,6 +22,7 @@ sweep to display phase instead.
 ```@example
 using CairoMakie, DomainColoring # hide
 pdphaseplot(z -> exp(1/z), 0.5)
+resize!(current_figure(), 620, 600) #hide
 save("pdphaseexample.png", current_figure()) # hide
 nothing # hide
 ```
@@ -36,6 +37,7 @@ sweep to display phase instead.
 ```@example
 using CairoMakie, DomainColoring # hide
 tphaseplot(z -> exp(1/z), 0.5)
+resize!(current_figure(), 620, 600) #hide
 save("tphaseexample.png", current_figure()) # hide
 nothing # hide
 ```
