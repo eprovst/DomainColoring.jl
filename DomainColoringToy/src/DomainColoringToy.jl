@@ -125,6 +125,7 @@ end
         grid = false,
         color = true,
         all = false,
+        box = nothing,
         kwargs...
     )
 
@@ -169,6 +170,10 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 
 - **`all`** is a shortcut for `abs = true` and `grid = true`.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 function domaincolor(
@@ -179,6 +184,7 @@ function domaincolor(
         grid = false,
         color = true,
         all = false,
+        box = nothing,
         kwargs...
     )
 
@@ -188,7 +194,7 @@ function domaincolor(
     end
 
     interactiveshadedplot(
-        f, w -> DC.domaincolorshader(w; abs, grid, color, all),
+        f, w -> DC.domaincolorshader(w; abs, grid, color, all, box),
         limits, pixels; kwargs...)
 end
 
@@ -197,6 +203,7 @@ end
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        box = nothing,
         kwargs...
     )
 
@@ -222,16 +229,21 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 function pdphaseplot(
         f,
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        box = nothing,
         kwargs...
     )
 
-    interactiveshadedplot(f, DC.pdphaseplotshader,
+    interactiveshadedplot(f, w -> DC.pdphaseplotshader(w; box),
                           limits, pixels; kwargs...)
 end
 
@@ -240,6 +252,7 @@ end
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        box = nothing,
         kwargs...
     )
 
@@ -265,16 +278,21 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 function tphaseplot(
         f,
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
+        box = nothing,
         kwargs...
     )
 
-    interactiveshadedplot(f, DC.tphaseplotshader,
+    interactiveshadedplot(f, w -> DC.tphaseplotshader(w; box),
                           limits, pixels; kwargs...)
 end
 
@@ -289,6 +307,8 @@ end
         angle = false,
         abs = false,
         polar = false,
+        box = nothing,
+        hicontrast = false,
         kwargs...
     )
 
@@ -329,6 +349,10 @@ Numbers can be provided instead of booleans to override the default rates.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 - **`hicontrast`** uses black and white instead of the softer defaults.
 
 Remaining keyword arguments are passed to Makie.
@@ -343,12 +367,13 @@ function checkerplot(
         angle = false,
         abs = false,
         polar = false,
+        box = nothing,
         hicontrast = false,
         kwargs...
     )
 
     interactiveshadedplot(f, w -> DC.checkerplotshader(
-            w; real, imag, rect, angle, abs, polar, hicontrast
+            w; real, imag, rect, angle, abs, polar, box, hicontrast
         ), limits, pixels; kwargs...)
 end
 
@@ -364,6 +389,7 @@ end
         abs = false,
         polar = false,
         color = false,
+        box = nothing,
         kwargs...
     )
 
@@ -406,6 +432,10 @@ Numbers can be provided instead of booleans to override the default rates.
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 function sawplot(
@@ -419,11 +449,12 @@ function sawplot(
         abs = false,
         polar = false,
         color = false,
+        box = nothing,
         kwargs...
     )
 
     interactiveshadedplot(f, w -> DC.sawplotshader(
-            w; real, imag, rect, angle, abs, polar, color
+            w; real, imag, rect, angle, abs, polar, color, box
         ), limits, pixels; kwargs...)
 end
 

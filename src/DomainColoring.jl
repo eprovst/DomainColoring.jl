@@ -383,6 +383,31 @@ _add_magnitude(w, c, arg::Function) = _add_magnitude(w, c; transform=arg)
 
 _add_magnitude(w, c, arg) = _add_magnitude(w, c; base=arg)
 
+# draw a colored box in a specified area
+function _add_box(w, c, sqs)
+    if isnothing(sqs)
+        return c
+    end
+
+    for sq in sqs
+        c = _add_box(w, c, sq)
+    end
+    return c
+end
+
+function _add_box(w, c::C, sq::Tuple{<:Any, <:Any, <:Color}) where C <: Color
+    a, b, s = sq
+    r, i = reim(w)
+    mr, Mr = minmax(real(a), real(b))
+    mi, Mi = minmax(imag(a), imag(b))
+    (mr <= r <= Mr) && (mi <= i <= Mi) ? convert(C, s) : c
+end
+
+function _add_box(w, c::C, sq::Tuple{<:Any, <:Any, <:Any}) where C <: Color
+    a, b, s = sq
+    _add_box(w, c, (a, b, parse(C, s)))
+end
+
 """
     DomainColoring.domaincolorshader(
         w :: Complex;
@@ -390,6 +415,7 @@ _add_magnitude(w, c, arg) = _add_magnitude(w, c; base=arg)
         grid = false,
         color = true,
         all = false,
+        box = nothing,
     )
 
 Takes a complex value **`w`** and shades it as in a domain coloring.
@@ -402,6 +428,7 @@ function domaincolorshader(
         grid = false,
         color = true,
         all = false,
+        box = nothing,
     )
 
     # user wants full domain coloring
@@ -413,7 +440,7 @@ function domaincolorshader(
 
     # short circuit conversions
     if (abs isa Bool) && !abs && (grid isa Bool) && !grid
-        return _color_angle(w, color)
+        return _add_box(w, _color_angle(w, color), box)
     end
 
     # phase color
@@ -429,6 +456,9 @@ function domaincolorshader(
         c = mapc(x -> g*x, c)
     end
 
+    # add boxs
+    c = _add_box(w, c, box)
+
     return c
 end
 
@@ -443,6 +473,7 @@ export domaincolor, domaincolor!
         grid = false,
         color = true,
         all = false,
+        box = nothing,
         kwargs...
     )
 
@@ -487,6 +518,10 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 - **`all`** is a shortcut for `abs = true`, `grid = true`, and
   `color = true`.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 domaincolor, domaincolor!
@@ -496,17 +531,21 @@ domaincolor, domaincolor!
     (abs = false,
      grid = false,
      color = true,
-     all = false),
+     all = false,
+     box = nothing),
     begin
         # issue warning if everything is inactive
         if Base.all(b -> b isa Bool && !b, (abs, grid, color, all))
             @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
         end
-        w -> domaincolorshader(w; abs, grid, color, all)
+        w -> domaincolorshader(w; abs, grid, color, all, box)
     end)
 
 """
-    DomainColoring.pdphaseplotshader(w :: Complex)
+    DomainColoring.pdphaseplotshader(
+        w :: Complex;
+        box = nothing,
+    )
 
 Shades a complex value **`w`** as a phase plot using
 [ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
@@ -514,7 +553,13 @@ protanopic and deuteranopic viewers.
 
 See [`pdphaseplot`](@ref) for more information.
 """
-pdphaseplotshader(w) = _color_angle(w, :CBC1)
+function pdphaseplotshader(
+        w;
+        box = nothing,
+    )
+
+    _add_box(w, _color_angle(w, :CBC1), box)
+end
 
 export pdphaseplot, pdphaseplot!
 
@@ -523,6 +568,7 @@ export pdphaseplot, pdphaseplot!
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
+        box = nothing,
         kwargs...
     )
 
@@ -547,14 +593,23 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 pdphaseplot, pdphaseplot!
 
-@shadedplot(pdphaseplot, (), pdphaseplotshader)
+@shadedplot(pdphaseplot,
+    (box = nothing,),
+    w -> pdphaseplotshader(w; box))
 
 """
-    DomainColoring.tphaseplotshader(w :: Complex)
+    DomainColoring.tphaseplotshader(
+        w :: Complex;
+        box = nothing,
+    )
 
 Shades a complex value **`w`** as a phase plot using
 [ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
@@ -562,7 +617,13 @@ titranopic viewers.
 
 See [`tphaseplot`](@ref) for more information.
 """
-tphaseplotshader(w) = _color_angle(w, :CBTC1)
+function tphaseplotshader(
+        w;
+        box = nothing,
+    )
+
+    _add_box(w, _color_angle(w, :CBTC1), box)
+end
 
 export tphaseplot, tphaseplot!
 
@@ -571,6 +632,7 @@ export tphaseplot, tphaseplot!
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
+        box = nothing,
         kwargs...
     )
 
@@ -595,11 +657,17 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 tphaseplot, tphaseplot!
 
-@shadedplot(tphaseplot, (), tphaseplotshader)
+@shadedplot(tphaseplot,
+    (box = nothing,),
+    w -> tphaseplotshader(w; box))
 
 """
     DomainColoring.checkerplotshader(
@@ -610,6 +678,7 @@ tphaseplot, tphaseplot!
         angle = false,
         abs = false,
         polar = false,
+        box = nothing,
         hicontrast = false,
     )
 
@@ -625,16 +694,20 @@ function checkerplotshader(
         angle = false,
         abs = false,
         polar = false,
+        box = nothing,
         hicontrast = false,
     )
 
     g = _grid(CheckerGrid, w; real, imag, rect, angle, abs, polar)
 
     if hicontrast
-        Gray(g)
+        c = Gray(g)
     else
-        Gray(0.9g + 0.08)
+        c = Gray(0.9g + 0.08)
     end
+
+    # add boxs
+    isnothing(box) ? c : _add_box(w, convert(RGB, c), box)
 end
 
 export checkerplot, checkerplot!
@@ -650,6 +723,7 @@ export checkerplot, checkerplot!
         angle = false,
         abs = false,
         polar = false,
+        box = nothing,
         hicontrast = false,
         kwargs...
     )
@@ -689,6 +763,10 @@ Numbers can be provided instead of booleans to override the default rates.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 - **`hicontrast`** uses black and white instead of the softer defaults.
 
 Remaining keyword arguments are passed to Makie.
@@ -702,9 +780,10 @@ checkerplot, checkerplot!
      angle = false,
      abs = false,
      polar = false,
+     box = nothing,
      hicontrast = false),
     w -> checkerplotshader(
-        w; real, imag, rect, angle, abs, polar, hicontrast
+        w; real, imag, rect, angle, abs, polar, box, hicontrast
     ))
 
 """
@@ -717,6 +796,7 @@ checkerplot, checkerplot!
         abs = false,
         polar = false,
         color = false,
+        box = nothing,
     )
 
 Takes a complex value **`w`** and shades it as in a saw plot.
@@ -732,15 +812,18 @@ function sawplotshader(
         abs = false,
         polar = false,
         color = false,
+        box = nothing,
     )
 
     g = _grid(SawGrid, w; real, imag, rect, angle, abs, polar)
 
     if color isa Bool && !color
-        Gray(0.6g + 0.3)
+        c = Gray(0.6g + 0.3)
+        isnothing(box) ? c : _add_box(w, convert(RGB, c), box)
     else
         c = convert(Lab, _color_angle(w, color))
-        Lab(c.l + 20g - 10, c.a, c.b)
+        c = Lab(c.l + 20g - 10, c.a, c.b)
+        _add_box(w, c, box)
     end
 end
 
@@ -758,6 +841,7 @@ export sawplot, sawplot!
         abs = false,
         polar = false,
         color = false,
+        box = nothing,
         kwargs...
     )
 
@@ -799,6 +883,10 @@ Numbers can be provided instead of booleans to override the default rates.
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
 
+- **`box`** if set to `(a, b, s)` shades the area where the the output
+  is within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
 Remaining keyword arguments are passed to Makie.
 """
 sawplot, sawplot!
@@ -810,9 +898,10 @@ sawplot, sawplot!
      angle = false,
      abs = false,
      polar = false,
-     color = false),
+     color = false,
+     box = nothing),
     w -> sawplotshader(
-        w; real, imag, rect, angle, abs, polar, color
+        w; real, imag, rect, angle, abs, polar, color, box
     ))
 
 end

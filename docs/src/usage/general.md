@@ -22,6 +22,10 @@ All plots have a keyword argument `pixels` by which one can specify the
 number of samples in respectively the real and imaginary direction. If
 only one number is provided it is used for both.
 
+Additionally there is also the option to fill in a box, or list of boxes
+in the output space using the option `box`, which is illustrated in the
+section on [`checkerplot`](@ref) and [`sawplot`](@ref).
+
 Finally, any remaining keywords are passed to Makie. This, together with
 the modifying variants (`domaincolor!`, `checkerplot!`, etc.), makes the
 plotting routines in this library behave similarly to other Makie plot
@@ -151,7 +155,7 @@ discussed so far also accept numbers, modifying the rate of the stripes.
 For example, we get for magnitude:
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, abs=5)
+sawplot(z -> z, 5, abs=5)
 resize!(current_figure(), 620, 600) #hide
 save("cpabs.png", current_figure()) # hide
 nothing # hide
@@ -162,7 +166,7 @@ and for phase:
 
 ```@example
 using CairoMakie, DomainColoring # hide
-sawplot(z -> z, 5, angle=10)
+checkerplot(z -> z, 5, angle=10)
 resize!(current_figure(), 620, 600) #hide
 save("cpangle.png", current_figure()) # hide
 nothing # hide
@@ -181,6 +185,17 @@ nothing # hide
 ```
 ![](cppolarsin.png)
 
+As mentioned before regions of the output plane can be colored using the
+`box` option, for example:
+```@example
+using CairoMakie, DomainColoring # hide
+checkerplot(z -> z^2, 2, box=[(1,1im,:red), (-1-2im,-2-1im,:blue)])
+resize!(current_figure(), 620, 600) #hide
+save("cpboxes.png", current_figure()) # hide
+nothing # hide
+```
+![](cpboxes.png)
+
 Finally, `hicontrast = true` can be used in [`checkerplot`](@ref) to
 plot in black and white instead of the slightly softer defaults, and
 `color = true` mixes phase coloring into a [`sawplot`](@ref) (further
@@ -195,7 +210,7 @@ and the rate of the grid. Additionally, we can pass named tuples to open
 up even more options.
 
 For `grid` these options are identical to `checkerplot`, for example an
-analogous example to the final one of last section, is given by:
+analogous example to the penultimate one of last section, is given by:
 ```@example
 using CairoMakie, DomainColoring # hide
 domaincolor(sin, (5, 2), grid=(polar=4,))
