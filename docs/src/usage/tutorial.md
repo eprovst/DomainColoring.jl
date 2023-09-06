@@ -132,7 +132,7 @@ As a final example, let us show off a few more capabilities of the
 This is a plot of ``f(z) = z^3i - 1`` with level curves of the logarithm
 of the magnitude and an integer grid. You can continue by reading the
 [General Overview](@ref) to learn more about these and other additional
-options, and the other provided plotting function [`checkerplot`](@ref).
+options, and the other provided plotting functions.
 
 ```@example
 using CairoMakie, DomainColoring # hide

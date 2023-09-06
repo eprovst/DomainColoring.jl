@@ -85,10 +85,10 @@ nothing # hide
 ![](dcsincall.png)
 
 The argument interface contains many further options, but we will delay
-their discussion until after introducing the [`checkerplot`](@ref)
-function.
+their discussion until after introducing the [`checkerplot`](@ref) and
+[`sawplot`](@ref) functions.
 
-## The [`checkerplot`](@ref) function
+## The [`checkerplot`](@ref) and [`sawplot`](@ref) functions
 
 A checker plot shows limited information and is useful to detect
 patterns in certain contexts. By default a checker board pattern is used
@@ -103,12 +103,26 @@ nothing # hide
 ```
 ![](cprect.png)
 
+A saw plot is similar but shows ramps instead of solid stripes, to get
+an idea of the direction of increase. Their interface is almost
+identical, so we'll use them interchangeably for most examples.
+
+The previous example as a saw plot would be:
+```@example
+using CairoMakie, DomainColoring # hide
+sawplot(z -> z, 5)
+resize!(current_figure(), 620, 600) #hide
+save("sprect.png", current_figure()) # hide
+nothing # hide
+```
+![](sprect.png)
+
 You can limit the stripes to only show increase in the real or imaginary
 part by setting `real = true` or `imag = true`, respectively. Again the
 previous example.
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, real=true)
+sawplot(z -> z, 5, real=true)
 resize!(current_figure(), 620, 600) #hide
 save("cpreal.png", current_figure()) # hide
 nothing # hide
@@ -148,16 +162,16 @@ and for phase:
 
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, angle=10)
+sawplot(z -> z, 5, angle=10)
 resize!(current_figure(), 620, 600) #hide
 save("cpangle.png", current_figure()) # hide
 nothing # hide
 ```
 ![](cpangle.png)
 
-Note, that for the latter we need to provide an even number. If we set
-`phase` to a number, this will be used for `abs` and a suitable integer
-rate will be chosen for `angle`, for instance:
+Note, that for a [`checkerplot`](@ref) the latter we needs to be an even
+number. If we set `phase` to a number, this will be used for `abs` and a
+suitable integer rate will be chosen for `angle`, for instance:
 ```@example
 using CairoMakie, DomainColoring # hide
 checkerplot(sin, (5, 2), polar=4)
@@ -167,15 +181,18 @@ nothing # hide
 ```
 ![](cppolarsin.png)
 
-Finally, `hicontrast = true` can be used to plot in black and white
-instead of the slightly softer defaults.
+Finally, `hicontrast = true` can be used in [`checkerplot`](@ref) to
+plot in black and white instead of the slightly softer defaults, and
+`color = true` mixes phase coloring into a [`sawplot`](@ref) (further
+possibilities of this option are identical to [`domaincolor`](@ref), as
+discussed at the end of the next section).
 
 ## The [`domaincolor`](@ref) function, revisited
 
-Like [`checkerplot`](@ref), `abs` and `grid` also accept numbers.
-Respectively, changing the basis of the used logarithm and the rate of
-the grid. Additionally, we can pass named tuples to open up even more
-options.
+Like [`checkerplot`](@ref) and [`sawplot`](@ref), `abs` and `grid` also
+accept numbers. Respectively, changing the basis of the used logarithm
+and the rate of the grid. Additionally, we can pass named tuples to open
+up even more options.
 
 For `grid` these options are identical to `checkerplot`, for example an
 analogous example to the final one of last section, is given by:
@@ -234,17 +251,17 @@ domaincolor(z -> exp(1/z), .1, abs=(sigma=0.001,))
 If one wants to change the coloring of the phase angle, they can pass a
 `ColorScheme` (as an object or by name, see [their
 documentation](https://juliagraphics.github.io/ColorSchemes.jl/stable/catalogue/))
-or a function `θ -> Color`, to `angle`. As an example of the latter, we
+or a function `θ -> Color`, to `color`. As an example of the latter, we
 can add a discretization effect:
 ```@example
 using CairoMakie, DomainColoring # hide
 discrangle(θ) = DomainColoring.labsweep(π/10 * floor(10/π * θ))
-domaincolor(tan, angle=discrangle)
+domaincolor(tan, color=discrangle)
 resize!(current_figure(), 620, 600) #hide
-save("dscangle.png", current_figure()) # hide
+save("dsccolor.png", current_figure()) # hide
 nothing # hide
 ```
-![](dscangle.png)
+![](dsccolor.png)
 
 Finally, if no coloring of the phase is wanted, we can set
-`angle = false`.
+`color = false`.

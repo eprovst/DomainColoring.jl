@@ -15,7 +15,7 @@ module DomainColoringToy
 using GLMakie
 import DomainColoring as DC
 
-export domaincolor, checkerplot, pdphaseplot, tphaseplot
+export domaincolor, checkerplot, sawplot, pdphaseplot, tphaseplot
 
 """
     DomainColoringToy.interactiveshadedplot(
@@ -121,9 +121,9 @@ end
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
-        angle = true,
         abs = false,
         grid = false,
+        color = true,
         all = false,
         kwargs...
     )
@@ -150,9 +150,6 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
 
-- **`angle`** toggles coloring of the phase angle. Can also be set to
-  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
-
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves. If set to a number,
   this will be used as base of the logarithm instead, if set to `Inf`,
@@ -167,6 +164,9 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   dots. More complicated arguments can be passed as a named tuple in a
   similar fashion to [`checkerplot`](@ref).
 
+- **`color`** toggles coloring of the phase angle. Can also be set to
+  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
+
 - **`all`** is a shortcut for `abs = true` and `grid = true`.
 
 Remaining keyword arguments are passed to Makie.
@@ -175,20 +175,20 @@ function domaincolor(
         f,
         limits = (-1, 1, -1, 1);
         pixels = (480, 480),
-        angle = true,
         abs = false,
         grid = false,
+        color = true,
         all = false,
         kwargs...
     )
 
     # issue warning if everything is inactive
-    if Base.all(b -> b isa Bool && !b, (angle, abs, grid, all))
+    if Base.all(b -> b isa Bool && !b, (abs, grid, color, all))
         @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
     end
 
     interactiveshadedplot(
-        f, w -> DC.domaincolorshader(w; angle, abs, grid, all),
+        f, w -> DC.domaincolorshader(w; abs, grid, color, all),
         limits, pixels; kwargs...)
 end
 
@@ -349,6 +349,81 @@ function checkerplot(
 
     interactiveshadedplot(f, w -> DC.checkerplotshader(
             w; real, imag, rect, angle, abs, polar, hicontrast
+        ), limits, pixels; kwargs...)
+end
+
+"""
+    sawplot(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        color = false,
+        kwargs...
+    )
+
+Takes a complex function and produces a saw plot as a Makie plot.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  viewport resolution is used.
+
+If none of the below options are set, the plot defaults to `rect = true`.
+Numbers can be provided instead of booleans to override the default rates.
+
+- **`real`** plots black to white ramps orthogonal to the real axis at a
+  rate of one ramp per unit.
+
+- **`imag`** plots black to white ramps orthogonal to the imaginary axis
+  at a rate of one ramp per unit.
+
+- **`rect`** is a shortcut for `real = true` and `imag = true`.
+
+- **`angle`** plots black to white ramps orthogonal to the phase angle
+  at a rate of six ramps per full rotation.
+
+- **`abs`** plots black to white ramps at a rate of one ramp per unit
+  increase of the natural logarithm of the magnitude.
+
+- **`phase`** is a shortcut for `angle = true` and `abs = true`.
+
+- **`color`** toggles coloring of the phase angle. Can also be set to
+  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
+
+Remaining keyword arguments are passed to Makie.
+"""
+function sawplot(
+        f,
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        color = false,
+        kwargs...
+    )
+
+    interactiveshadedplot(f, w -> DC.sawplotshader(
+            w; real, imag, rect, angle, abs, polar, color
         ), limits, pixels; kwargs...)
 end
 

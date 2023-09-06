@@ -222,6 +222,7 @@ end
 @enum GridType begin
     CheckerGrid
     LineGrid
+    SawGrid
 end
 
 # Logic for grid like plotting elements, somewhat ugly, but it works.
@@ -278,32 +279,42 @@ function _grid(
     (angle isa Bool && angle) && (angle = 6)
     (abs   isa Bool && abs)   && (abs = 1)
 
+    # set the transform
+    saw(x) = mod(x, 1)
+    if type == SawGrid
+        trf = saw
+    else
+        trf = sinpi
+    end
+
     g = 1.0
     if real > 0
-        r = real * π * Base.real(w)
-        isfinite(r) && (g *= sin(r))
+        r = real * Base.real(w)
+        isfinite(r) && (g *= trf(r))
     end
     if imag > 0
-        i = imag * π * Base.imag(w)
-        isfinite(i) && (g *= sin(i))
+        i = imag * Base.imag(w)
+        isfinite(i) && (g *= trf(i))
     end
     if angle > 0
         @assert mod(angle, 1) ≈ 0 "Rate of angle has to be an integer."
         angle = round(angle)
         (type == CheckerGrid) && @assert iseven(angle) "Rate of angle has to be even."
 
-        a = angle / 2 * Base.angle(w)
-        isfinite(a) && (g *= sin(a))
+        a = angle * Base.angle(w) / 2π
+        isfinite(a) && (g *= trf(a))
     end
     if abs > 0
-        m = abs * π * log(Base.abs(w))
-        isfinite(m) && (g *= sin(m))
+        m = abs * log(Base.abs(w))
+        isfinite(m) && (g *= trf(m))
     end
 
     if type == CheckerGrid
         float(g > 0)
     elseif type == LineGrid
         Base.abs(g)^0.06
+    else
+        g
     end
 end
 
@@ -320,7 +331,17 @@ _color_angle(w, arg::Function) = arg(mod(angle(w), 2π))
 
 _color_angle(w, arg::ColorScheme) = get(arg, mod(angle(w) / 2π, 1))
 
-_color_angle(w, arg::Symbol) = _color_angle(w, ColorSchemes.colorschemes[arg])
+function _color_angle(w, arg::Symbol)
+    if arg == :CBC1 || arg == :pd
+      get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
+          mod(-angle(w) / 2π + .5, 1))
+    elseif arg == :CBTC1 || arg == :t
+      get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
+          mod(-angle(w) / 2π + .5, 1))
+    else
+      _color_angle(w, ColorSchemes.colorschemes[arg])
+    end
+end
 
 # Implements the magnitude logic for `domaincolorshader`
 # isnothing(transform) gives the default log, and saves us
@@ -365,9 +386,9 @@ _add_magnitude(w, c, arg) = _add_magnitude(w, c; base=arg)
 """
     DomainColoring.domaincolorshader(
         w :: Complex;
-        angle = true,
         abs = false,
         grid = false,
+        color = true,
         all = false,
     )
 
@@ -377,26 +398,26 @@ For documentation of the remaining arguments see [`domaincolor`](@ref).
 """
 function domaincolorshader(
         w;
-        angle = true,
         abs = false,
         grid = false,
+        color = true,
         all = false,
     )
 
     # user wants full domain coloring
     if all
-        (angle isa Bool) && (angle = true)
         (abs   isa Bool) && (abs   = true)
         (grid  isa Bool) && (grid  = true)
+        (color isa Bool) && (color = true)
     end
 
     # short circuit conversions
     if (abs isa Bool) && !abs && (grid isa Bool) && !grid
-        return _color_angle(w, angle)
+        return _color_angle(w, color)
     end
 
     # phase color
-    c = convert(Lab, _color_angle(w, angle))
+    c = convert(Lab, _color_angle(w, color))
 
     # add magnitude
     c = _add_magnitude(w, c, abs)
@@ -418,9 +439,9 @@ export domaincolor, domaincolor!
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
         pixels = (720, 720),
-        angle = true,
         abs = false,
         grid = false,
+        color = true,
         all = false,
         kwargs...
     )
@@ -446,9 +467,6 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
-- **`angle`** toggles coloring of the phase angle. Can also be set to
-  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
-
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves. If set to a number,
   this will be used as base of the logarithm instead, if set to `Inf`,
@@ -463,7 +481,11 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   dots. More complicated arguments can be passed as a named tuple in a
   similar fashion to [`checkerplot`](@ref).
 
-- **`all`** is a shortcut for `abs = true` and `grid = true`.
+- **`color`** toggles coloring of the phase angle. Can also be set to
+  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
+
+- **`all`** is a shortcut for `abs = true`, `grid = true`, and
+  `color = true`.
 
 Remaining keyword arguments are passed to Makie.
 """
@@ -471,16 +493,16 @@ domaincolor, domaincolor!
 
 @shadedplot(
     domaincolor,
-    (angle = true,
-     abs = false,
+    (abs = false,
      grid = false,
+     color = true,
      all = false),
     begin
         # issue warning if everything is inactive
-        if Base.all(b -> b isa Bool && !b, (angle, abs, grid, all))
+        if Base.all(b -> b isa Bool && !b, (abs, grid, color, all))
             @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
         end
-        w -> domaincolorshader(w; angle, abs, grid, all)
+        w -> domaincolorshader(w; abs, grid, color, all)
     end)
 
 """
@@ -492,10 +514,7 @@ protanopic and deuteranopic viewers.
 
 See [`pdphaseplot`](@ref) for more information.
 """
-function pdphaseplotshader(w)
-    get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
-        mod(-angle(w) / 2π + .5, 1))
-end
+pdphaseplotshader(w) = _color_angle(w, :CBC1)
 
 export pdphaseplot, pdphaseplot!
 
@@ -543,10 +562,7 @@ titranopic viewers.
 
 See [`tphaseplot`](@ref) for more information.
 """
-function tphaseplotshader(w)
-    get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
-        mod(-angle(w) / 2π + .5, 1))
-end
+tphaseplotshader(w) = _color_angle(w, :CBTC1)
 
 export tphaseplot, tphaseplot!
 
@@ -689,6 +705,114 @@ checkerplot, checkerplot!
      hicontrast = false),
     w -> checkerplotshader(
         w; real, imag, rect, angle, abs, polar, hicontrast
+    ))
+
+"""
+    DomainColoring.sawplotshader(
+        w :: Complex;
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        color = false,
+    )
+
+Takes a complex value **`w`** and shades it as in a saw plot.
+
+For documentation of the remaining arguments see [`sawplot`](@ref).
+"""
+function sawplotshader(
+        w;
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        color = false,
+    )
+
+    g = _grid(SawGrid, w; real, imag, rect, angle, abs, polar)
+
+    if color isa Bool && !color
+        Gray(0.6g + 0.3)
+    else
+        c = convert(Lab, _color_angle(w, color))
+        Lab(c.l + 20g - 10, c.a, c.b)
+    end
+end
+
+export sawplot, sawplot!
+
+"""
+    sawplot(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (720, 720),
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        color = false,
+        kwargs...
+    )
+
+Takes a complex function and produces a saw plot as a Makie plot.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
+
+If none of the below options are set, the plot defaults to `rect = true`.
+Numbers can be provided instead of booleans to override the default rates.
+
+- **`real`** plots black to white ramps orthogonal to the real axis at a
+  rate of one ramp per unit.
+
+- **`imag`** plots black to white ramps orthogonal to the imaginary axis
+  at a rate of one ramp per unit.
+
+- **`rect`** is a shortcut for `real = true` and `imag = true`.
+
+- **`angle`** plots black to white ramps orthogonal to the phase angle
+  at a rate of six ramps per full rotation.
+
+- **`abs`** plots black to white ramps at a rate of one ramp per unit
+  increase of the natural logarithm of the magnitude.
+
+- **`phase`** is a shortcut for `angle = true` and `abs = true`.
+
+- **`color`** toggles coloring of the phase angle. Can also be set to
+  either the name of, or a `ColorScheme`, or a function `θ -> Color`.
+
+Remaining keyword arguments are passed to Makie.
+"""
+sawplot, sawplot!
+
+@shadedplot(sawplot,
+    (real = false,
+     imag = false,
+     rect = false,
+     angle = false,
+     abs = false,
+     polar = false,
+     color = false),
+    w -> sawplotshader(
+        w; real, imag, rect, angle, abs, polar, color
     ))
 
 end

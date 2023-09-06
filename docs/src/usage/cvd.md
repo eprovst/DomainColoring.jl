@@ -13,6 +13,12 @@ rendered unreadable.
 clearly readable to them, based on color maps developed by
 [Peter Kovesi](https://peterkovesi.com/papers/ColourMapsForColourBlindIAMG2017.pdf).
 
+!!! note
+    These color maps can also be used in the other plots as
+    `:pd`/`:CBC1` and `:t`/`:CBTC1`, respectively. However do note that
+    their use of black and white might interfere with other plotting
+    elements.
+
 ## Phase plots for protanopia and deuteranopia
 
 For these viewers it is difficult to distinguish red and green hues. The
