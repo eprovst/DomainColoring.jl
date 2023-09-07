@@ -126,7 +126,7 @@ part by setting `real = true` or `imag = true`, respectively. Again the
 previous example.
 ```@example
 using CairoMakie, DomainColoring # hide
-sawplot(z -> z, 5, real=true)
+checkerplot(z -> z, 5, real=true)
 resize!(current_figure(), 620, 600) #hide
 save("cpreal.png", current_figure()) # hide
 nothing # hide
@@ -141,7 +141,7 @@ Alternatively one can also display a polar grid by setting
 six bands per ``2\pi`` increase of ``\arg(f(z))``.
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, polar=true)
+sawplot(z -> z, 5, polar=true)
 resize!(current_figure(), 620, 600) #hide
 save("cppolar.png", current_figure()) # hide
 nothing # hide
@@ -155,7 +155,7 @@ discussed so far also accept numbers, modifying the rate of the stripes.
 For example, we get for magnitude:
 ```@example
 using CairoMakie, DomainColoring # hide
-sawplot(z -> z, 5, abs=5)
+checkerplot(z -> z, 5, abs=5)
 resize!(current_figure(), 620, 600) #hide
 save("cpabs.png", current_figure()) # hide
 nothing # hide
@@ -166,7 +166,7 @@ and for phase:
 
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, angle=10)
+sawplot(z -> z, 5, angle=10)
 resize!(current_figure(), 620, 600) #hide
 save("cpangle.png", current_figure()) # hide
 nothing # hide

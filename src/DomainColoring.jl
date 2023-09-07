@@ -172,13 +172,14 @@ See the source for examples.
 macro shadedplot(basename, shaderkwargs, shader)
     modifname = Symbol(basename, '!')
     # interpret sargs as keyword arguments
-    skwargs = [Expr(:kw, p...) for p in pairs(eval(shaderkwargs))]
+    skwargs = [Expr(:kw, p...) for
+               p in pairs(__module__.eval(shaderkwargs))]
 
     for (fname, sname, target) in
         ((basename,  :shadedplot,  ()),
          (modifname, :shadedplot!, ()),
          (modifname, :shadedplot!, (:target,)))
-        @eval begin
+        @eval __module__ begin
             function $fname(
                     $(target...),
                     f :: Function,
@@ -188,8 +189,8 @@ macro shadedplot(basename, shaderkwargs, shader)
                     kwargs...
                 )
 
-                $sname($(target...), f, $shader,
-                       limits, pixels; kwargs...)
+                DomainColoring.$sname($(target...), f, $shader,
+                                      limits, pixels; kwargs...)
             end
         end
     end

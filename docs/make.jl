@@ -17,6 +17,7 @@ makedocs(
       "usage/tutorial.md",
       "usage/general.md",
       "usage/cvd.md",
+      "usage/custom.md",
     ],
     "Library" => "lib.md",
     "DomainColoringToy" => "dct.md",
