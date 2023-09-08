@@ -1,8 +1,8 @@
 # DomainColoring.jl: Smooth Complex Plotting
 
 Welcome to the documentation of the `DomainColoring.jl` package, a small
-collection of various ways to plot complex functions, built on
-[Makie](https://makie.org).
+collection of various ways to plot complex functions, supporting
+[Plots.jl](https://docs.juliaplots.org) and [Makie](https://makie.org).
 
 ```@raw html
 <div align="center">

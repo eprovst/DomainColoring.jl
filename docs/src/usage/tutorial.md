@@ -5,12 +5,15 @@
     might be fairly basic. Continue to the [General Overview](@ref)
     instead.
 
-## Installation, loading and Makie
+## Installation, loading, Makie and Plots.jl
 
 `DomainColoring.jl` provides plotting routines for complex functions.
-These build on the [Makie](https://makie.org/) plotting library. Makie
-supports multiple backends, one of which has to be loaded to display the
-resulting plot. There are two main options:
+These require either the [Makie](https://makie.org/) or
+[Plots.jl](https://docs.juliaplots.org) plotting libraries. In this
+tutorial we will use the former.
+
+Makie supports multiple backends, one of which has to be loaded to
+display the resulting plot. There are two main options:
 
 - `GLMakie` for interactive plots, and
 - `CairoMakie` for publication quality plots.
@@ -50,7 +53,7 @@ z -> 2z + 1
 
 Let us now see how the phase of this function behaves in the complex
 plane. First, if you haven't already, we need to load
-`DomainColoring.jl` and an appropriate Makie backend (our suggestion is
+`DomainColoring.jl` and an appropriate backend (our suggestion is
 `GLMakie` if you're experimenting from the Julia REPL):
 ```@example
 using CairoMakie, DomainColoring

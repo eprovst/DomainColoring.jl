@@ -1,10 +1,10 @@
 # General Overview
 
 !!! note
-    `DomainColoring.jl` provides plots on top of the
-    [Makie](https://makie.org) framework, thus a user will have to
-    additionally install and load a Makie backend such as `CairoMakie`
-    or `GLMakie`.
+    `DomainColoring.jl` provides plots on top of either the
+    [Plots.jl](https://docs.juliaplots.org) or
+    [Makie](https://makie.org) frameworks, thus a user will have to
+    additionally install and load a backend.
 
 ## Common options
 
@@ -26,11 +26,12 @@ Additionally there is also the option to fill in a box, or list of boxes
 in the output space using the option `box`, which is illustrated in the
 section on [`checkerplot`](@ref) and [`sawplot`](@ref).
 
-Finally, any remaining keywords are passed to Makie. This, together with
-the modifying variants (`domaincolor!`, `checkerplot!`, etc.), makes the
-plotting routines in this library behave similarly to other Makie plot
-types. For more information we refer to [their
-documenation](https://docs.makie.org/).
+Finally, any remaining keywords are passed to the backend. This,
+together with the modifying variants (`domaincolor!`, `checkerplot!`,
+etc.), makes the plotting routines in this library behave similarly to
+other plot types. For more information we refer to the
+[Plots.jl](https://docs.juliaplots.org) and
+[Makie](https://docs.makie.org) documentation.
 
 The remainder of this page gives a quick overview of the main plotting
 functions of `DomainColoring.jl`.

@@ -1,24 +1,7 @@
-using MakieCore
-import MakieCore: Attributes
+using .MakieCore
+import .MakieCore: Attributes
 
-"""
-    DomainColoring.shadedplot(
-        f :: "Complex -> Complex",
-        shader :: "Complex -> Color",
-        limits = (-1, 1, -1, 1),
-        pixels = (720, 720);
-        kwargs...
-    )
-
-Takes a complex function **`f`** and a **`shader`** and produces a Makie
-plot.
-
-For documentation of the remaining arguments see [`renderimage`](@ref).
-
-Keyword arguments are passed to Makie.
-"""
-shadedplot, shadedplot!
-
+# Makie specific version of `shadedplot` and `shadedplot!`
 for (modifying, target) in
     ((false, ()),
      (true, ()),
@@ -40,17 +23,16 @@ for (modifying, target) in
             limits = _expandlimits(limits)
 
             # parse Makie options
-            defaults = Attributes(;
-                interpolate = true,
-                $(if modifying
-                      :(()...)
-                  else
-                      Expr(:kw, :axis,
-                           :((autolimitaspect = 1,
+            $(if !modifying
+                  :(defaults = Attributes(;
+                      interpolate = true,
+                      axis = (autolimitaspect = 1,
                               aspect = (limits[2] - limits[1]) /
                                        (limits[4] - limits[3]))))
-                  end)
-            )
+              else
+                  :(defaults = Attributes(; interpolate = true))
+              end)
+
             attr = merge(Attributes(; kwargs...), defaults)
 
             # images have inverted y and flip x and y in their storage
