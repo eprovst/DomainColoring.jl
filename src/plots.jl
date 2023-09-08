@@ -53,8 +53,7 @@ export domaincolor, domaincolor!
         kwargs...
     )
 
-Takes a complex function and produces it's domain coloring as a Makie
-plot.
+Takes a complex function and produces it's domain coloring plot.
 
 Red corresponds to phase ``0``, yellow to ``\\frac{\\pi}{3}``, green
 to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
@@ -94,11 +93,11 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 - **`all`** is a shortcut for `abs = true`, `grid = true`, and
   `color = true`.
 
-- **`box`** if set to `(a, b, s)` shades the area where the the output
-  is within the box `a` and `b` in the color `s`. Can also be a list of
+- **`box`** if set to `(a, b, s)` shades the area where the output is
+  within the box `a` and `b` in the color `s`. Can also be a list of
   multiple boxes.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 domaincolor, domaincolor!
 
@@ -128,9 +127,9 @@ export pdphaseplot, pdphaseplot!
         kwargs...
     )
 
-Takes a complex valued function and produces a phase plot as a Makie
-plot using [ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
-protanopic and deuteranopic viewers.
+Takes a complex valued function and produces a phase plot using
+[ColorCET](https://colorcet.com)'s CBC1 cyclic color map for protanopic
+and deuteranopic viewers.
 
 Yellow corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, blue
 to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
@@ -149,11 +148,11 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
-- **`box`** if set to `(a, b, s)` shades the area where the the output
-  is within the box `a` and `b` in the color `s`. Can also be a list of
+- **`box`** if set to `(a, b, s)` shades the area where the output is
+  within the box `a` and `b` in the color `s`. Can also be a list of
   multiple boxes.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 pdphaseplot, pdphaseplot!
 
@@ -172,9 +171,9 @@ export tphaseplot, tphaseplot!
         kwargs...
     )
 
-Takes a complex valued function and produces a phase plot as a Makie
-plot using [ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
-titranopic viewers.
+Takes a complex valued function and produces a phase plot using
+[ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for titranopic
+viewers.
 
 Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
@@ -193,11 +192,11 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
   real and imaginary axis, taking the same for both if only one number
   is provided.
 
-- **`box`** if set to `(a, b, s)` shades the area where the the output
-  is within the box `a` and `b` in the color `s`. Can also be a list of
+- **`box`** if set to `(a, b, s)` shades the area where the output is
+  within the box `a` and `b` in the color `s`. Can also be a list of
   multiple boxes.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 tphaseplot, tphaseplot!
 
@@ -223,7 +222,7 @@ export checkerplot, checkerplot!
         kwargs...
     )
 
-Takes a complex function and produces a checker plot as a Makie plot.
+Takes a complex function and produces a checker plot.
 
 # Arguments
 
@@ -258,13 +257,13 @@ Numbers can be provided instead of booleans to override the default rates.
 
 - **`phase`** is a shortcut for `angle = true` and `abs = true`.
 
-- **`box`** if set to `(a, b, s)` shades the area where the the output
-  is within the box `a` and `b` in the color `s`. Can also be a list of
+- **`box`** if set to `(a, b, s)` shades the area where the output is
+  within the box `a` and `b` in the color `s`. Can also be a list of
   multiple boxes.
 
 - **`hicontrast`** uses black and white instead of the softer defaults.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 checkerplot, checkerplot!
 
@@ -299,7 +298,7 @@ export sawplot, sawplot!
         kwargs...
     )
 
-Takes a complex function and produces a saw plot as a Makie plot.
+Takes a complex function and produces a saw plot.
 
 # Arguments
 
@@ -337,11 +336,11 @@ Numbers can be provided instead of booleans to override the default rates.
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
 
-- **`box`** if set to `(a, b, s)` shades the area where the the output
-  is within the box `a` and `b` in the color `s`. Can also be a list of
+- **`box`** if set to `(a, b, s)` shades the area where the output is
+  within the box `a` and `b` in the color `s`. Can also be a list of
   multiple boxes.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 sawplot, sawplot!
 
