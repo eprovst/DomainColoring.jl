@@ -1,133 +1,9 @@
-#==
- = DomainColoringToy
- =
- = Copyright (c) 2023 Evert Provoost. See LICENSE.
- =
- = Provided functionality is partially inspired by
- =
- =     Wegert, Elias. Visual Complex Functions:
- =       An Introduction with Phase Portraits.
- =       Birkhäuser Basel, 2012.
- =#
-
-module DomainColoringToy
-
-using Reexport
-@reexport using GLMakie
-import DomainColoring as DC
-
-export domaincolor, checkerplot, sawplot, pdphaseplot, tphaseplot
-
 """
-    DomainColoringToy.interactiveshadedplot(
-        f :: "Complex -> Complex",
-        shader :: "Complex -> Color",
-        limits = (-1, 1, -1, 1),
-        pixels = (480, 480);
-        kwargs...
-    )
+    DomainColoring.@shadedplot(basename, shaderkwargs, shader)
 
-Takes a complex function and a shader and produces a GLMakie plot with
-auto updating.
-
-# Arguments
-
-- **`f`** is the complex function to plot.
-
-- **`shader`** is the shader function to compute a pixel.
-
-- **`limits`** are the initial limits of the plot, in the format
-  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
-  instead they are take symmetric along the real and imaginary axis.
-
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
-
-Keyword arguments are passed to Makie.
-"""
-function interactiveshadedplot(
-        f,
-        shader,
-        limits = (-1, 1, -1, 1),
-        pixels = (480, 480);
-        kwargs...
-    )
-
-    # sanitize input
-    pixels == :auto && (pixels = (:auto, :auto))
-    length(pixels) == 1 && (pixels = (pixels, pixels))
-    limits = DC._expandlimits(limits)
-
-    # parse Makie options
-    defaults = Attributes(
-        interpolate = true,
-        axis = (autolimitaspect = 1,)
-    )
-    attr = merge(Attributes(; kwargs...), defaults)
-
-    # setup observables to be used by update
-    img = Observable(
-        # tiny render to catch errors and setup type
-        DC.renderimage(f, shader, limits, (2, 2))
-    )
-    xl = Observable([limits[1], limits[2]])
-    yl = Observable([limits[3], limits[4]])
-
-    # setup plot
-    # transpose as x and y are swapped in images
-    # reverse as y is reversed in images
-    plt = heatmap(xl, lift(reverse, yl), lift(adjoint, img);
-                  attr...)
-
-    # set default limits
-    xlims!(plt.axis, limits[1], limits[2])
-    ylims!(plt.axis, limits[3], limits[4])
-
-    # update loop
-    function update(lims, res)
-        # set render limits to viewport
-        axs = (lims.origin[1], lims.origin[1] + lims.widths[1],
-               lims.origin[2], lims.origin[2] + lims.widths[2])
-        xl[] = [axs[1], axs[2]]
-        yl[] = [axs[3], axs[4]]
-
-        # get resolution if needed
-        px = map((p, r) -> p == :auto ? ceil(Int, 1.1r) : p,
-                 pixels, tuple(res...))
-
-        # render new image reusing buffer if possible
-        if size(img.val) != px
-            img.val = DC.renderimage(f, shader, axs, px)
-        else
-            DC.renderimage!(img.val, f, shader, axs)
-        end
-        notify(img)
-    end
-
-    # initial render
-    lims = plt.axis.finallimits
-    res = plt.axis.scene.camera.resolution
-    update(lims[], res[])
-
-    # observe updates
-    onany(update, lims, res)
-
-    return plt
-end
-
-
-"""
-    DomainColoringToy.@interactiveshadedplot(
-        basename,
-        shaderkwargs,
-        shader
-    )
-
-Macro emitting an implementation of **`fname`** in a similar fashion to
-the other plotting routines in this library, see for instance
-[`domaincolor`](@ref).
+Macro emitting implementations of **`basename`** and **`basename!`** in
+a similar fashion to the other plotting routines in this library, see
+for instance [`domaincolor`](@ref) and [`domaincolor!`](@ref).
 
 **`shaderkwargs`** is a named tuple setting keyword arguments used in
 the expression **`shader`**. The result of **`shader`** should be a
@@ -135,31 +11,40 @@ function `Complex -> Color` and is used to shade the resulting plot.
 
 See the source for examples.
 """
-macro interactiveshadedplot(fname, shaderkwargs, shader)
-    # interpret shaderkwargs as keyword arguments
+macro shadedplot(basename, shaderkwargs, shader)
+    modifname = Symbol(basename, '!')
+    # interpret sargs as keyword arguments
     skwargs = [Expr(:kw, p...) for
                p in pairs(__module__.eval(shaderkwargs))]
 
-    @eval __module__ begin
-        function $fname(
-                f :: Function,
-                limits = (-1, 1, -1, 1);
-                pixels = (480, 480),
-                $(skwargs...),
-                kwargs...
-            )
+    for (fname, sname, target) in
+        ((basename,  :shadedplot,  ()),
+         (modifname, :shadedplot!, ()),
+         (modifname, :shadedplot!, (:target,)))
+        @eval __module__ begin
+            function $fname(
+                    $(target...),
+                    f :: Function,
+                    limits = (-1, 1, -1, 1);
+                    pixels = (720, 720),
+                    $(skwargs...),
+                    kwargs...
+                )
 
-            DomainColoringToy.interactiveshadedplot(
-                f, $shader, limits, pixels; kwargs...)
+                DomainColoring.$sname($(target...), f, $shader,
+                                      limits, pixels; kwargs...)
+            end
         end
     end
 end
+
+export domaincolor, domaincolor!
 
 """
     domaincolor(
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
-        pixels = (480, 480),
+        pixels = (720, 720),
         abs = false,
         grid = false,
         color = true,
@@ -168,8 +53,8 @@ end
         kwargs...
     )
 
-Takes a complex function and produces it's domain coloring as an
-interactive GLMakie plot.
+Takes a complex function and produces it's domain coloring as a Makie
+plot.
 
 Red corresponds to phase ``0``, yellow to ``\\frac{\\pi}{3}``, green
 to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
@@ -185,10 +70,9 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 
 # Keyword Arguments
 
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
 
 - **`abs`** toggles the plotting of the natural logarithm of the
   magnitude as lightness ramps between level curves. If set to a number,
@@ -198,7 +82,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   parameters `base`, `transform`, or `sigma`. `base` changes the base of
   the logarithm, as before. `transform` is the function applied to the
   magnitude (`m -> log(base, m)` by default), and `sigma` changes the
-  rate at which zeros and poles are colored when `base = Inf`.
+  rate at which zeros and poles are colored and implies `base = Inf`.
 
 - **`grid`** plots points with integer real or imaginary part as black
   dots. More complicated arguments can be passed as a named tuple in a
@@ -207,7 +91,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
 
-- **`all`** is a shortcut for `abs = true` and `grid = true`.
+- **`all`** is a shortcut for `abs = true`, `grid = true`, and
+  `color = true`.
 
 - **`box`** if set to `(a, b, s)` shades the area where the the output
   is within the box `a` and `b` in the color `s`. Can also be a list of
@@ -215,9 +100,9 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 
 Remaining keyword arguments are passed to Makie.
 """
-domaincolor
+domaincolor, domaincolor!
 
-@interactiveshadedplot(
+@shadedplot(
     domaincolor,
     (abs = false,
      grid = false,
@@ -229,21 +114,23 @@ domaincolor
         if Base.all(b -> b isa Bool && !b, (abs, grid, color, all))
             @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
         end
-        w -> DC.domaincolorshader(w; abs, grid, color, all, box)
+        w -> domaincolorshader(w; abs, grid, color, all, box)
     end)
+
+export pdphaseplot, pdphaseplot!
 
 """
     pdphaseplot(
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
-        pixels = (480, 480),
+        pixels = (720, 720),
         box = nothing,
         kwargs...
     )
 
-Takes a complex valued function and produces a phase plot as an
-interactive GLMakie plot using [ColorCET](https://colorcet.com)'s CBC1
-cyclic color map for protanopic and deuteranopic viewers.
+Takes a complex valued function and produces a phase plot as a Makie
+plot using [ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
+protanopic and deuteranopic viewers.
 
 Yellow corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, blue
 to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
@@ -258,10 +145,9 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
 
 # Keyword Arguments
 
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
 
 - **`box`** if set to `(a, b, s)` shades the area where the the output
   is within the box `a` and `b` in the color `s`. Can also be a list of
@@ -269,24 +155,26 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
 
 Remaining keyword arguments are passed to Makie.
 """
-pdphaseplot
+pdphaseplot, pdphaseplot!
 
-@interactiveshadedplot(pdphaseplot,
+@shadedplot(pdphaseplot,
     (box = nothing,),
-    w -> DC.pdphaseplotshader(w; box))
+    w -> pdphaseplotshader(w; box))
+
+export tphaseplot, tphaseplot!
 
 """
     tphaseplot(
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
-        pixels = (480, 480),
+        pixels = (720, 720),
         box = nothing,
         kwargs...
     )
 
-Takes a complex valued function and produces a phase plot as an
-interactive GLMakie plot using [ColorCET](https://colorcet.com)'s CBTC1
-cyclic color map for titranopic viewers.
+Takes a complex valued function and produces a phase plot as a Makie
+plot using [ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
+titranopic viewers.
 
 Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
@@ -301,10 +189,9 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 
 # Keyword Arguments
 
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
 
 - **`box`** if set to `(a, b, s)` shades the area where the the output
   is within the box `a` and `b` in the color `s`. Can also be a list of
@@ -312,17 +199,19 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 
 Remaining keyword arguments are passed to Makie.
 """
-tphaseplot
+tphaseplot, tphaseplot!
 
-@interactiveshadedplot(tphaseplot,
+@shadedplot(tphaseplot,
     (box = nothing,),
-    w -> DC.tphaseplotshader(w; box))
+    w -> tphaseplotshader(w; box))
+
+export checkerplot, checkerplot!
 
 """
     checkerplot(
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
-        pixels = (480, 480),
+        pixels = (720, 720),
         real = false,
         imag = false,
         rect = false,
@@ -334,8 +223,7 @@ tphaseplot
         kwargs...
     )
 
-Takes a complex function and produces a checker plot as an interactive
-GLMakie plot.
+Takes a complex function and produces a checker plot as a Makie plot.
 
 # Arguments
 
@@ -347,10 +235,9 @@ GLMakie plot.
 
 # Keyword Arguments
 
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
 
 If none of the below options are set, the plot defaults to `rect = true`.
 Numbers can be provided instead of booleans to override the default rates.
@@ -379,9 +266,9 @@ Numbers can be provided instead of booleans to override the default rates.
 
 Remaining keyword arguments are passed to Makie.
 """
-checkerplot
+checkerplot, checkerplot!
 
-@interactiveshadedplot(checkerplot,
+@shadedplot(checkerplot,
     (real = false,
      imag = false,
      rect = false,
@@ -390,15 +277,17 @@ checkerplot
      polar = false,
      box = nothing,
      hicontrast = false),
-    w -> DC.checkerplotshader(
+    w -> checkerplotshader(
         w; real, imag, rect, angle, abs, polar, box, hicontrast
     ))
+
+export sawplot, sawplot!
 
 """
     sawplot(
         f :: "Complex -> Complex",
         limits = (-1, 1, -1, 1);
-        pixels = (480, 480),
+        pixels = (720, 720),
         real = false,
         imag = false,
         rect = false,
@@ -422,10 +311,9 @@ Takes a complex function and produces a saw plot as a Makie plot.
 
 # Keyword Arguments
 
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
+- **`pixels`** is the number of pixels to compute in, respectively, the
+  real and imaginary axis, taking the same for both if only one number
+  is provided.
 
 If none of the below options are set, the plot defaults to `rect = true`.
 Numbers can be provided instead of booleans to override the default rates.
@@ -455,9 +343,9 @@ Numbers can be provided instead of booleans to override the default rates.
 
 Remaining keyword arguments are passed to Makie.
 """
-sawplot
+sawplot, sawplot!
 
-@interactiveshadedplot(sawplot,
+@shadedplot(sawplot,
     (real = false,
      imag = false,
      rect = false,
@@ -466,8 +354,6 @@ sawplot
      polar = false,
      color = false,
      box = nothing),
-    w -> DC.sawplotshader(
+    w -> sawplotshader(
         w; real, imag, rect, angle, abs, polar, color, box
     ))
-
-end
