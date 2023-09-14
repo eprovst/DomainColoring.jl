@@ -283,3 +283,72 @@ nothing # hide
 
 Finally, if no coloring of the phase is wanted, we can set
 `color = false`.
+
+## The Riemann sphere
+To close, let us demonstrate how you can combine plots in the Makie
+framework to plot the two hemispheres of the Riemann sphere side to
+side.
+
+Separately these would be for some function `f`, say `sin`
+```@example
+using CairoMakie, DomainColoring # hide
+f = sin
+domaincolor(z -> abs(z) <= 1 ? f(z) : NaN)
+resize!(current_figure(), 620, 600) #hide
+current_figure() #hide
+```
+
+and
+```@example
+using CairoMakie, DomainColoring # hide
+f = sin #hide
+domaincolor(z -> abs(z) <= 1 ? f(1/z) : NaN)
+resize!(current_figure(), 620, 600) #hide
+current_figure() #hide
+```
+
+where we used that `NaN` is shown transparent by the plots of this
+package.
+
+In Makie a layout of `Axis` objects is collected in a `Figure`, we can
+position them by indexing the figure. Two axes side by side would for
+instance be:
+```@example
+using CairoMakie
+
+fig = Figure()
+ax11 = Axis(fig[1,1])
+ax12 = Axis(fig[1,2])
+resize!(fig, 620, 400) #hide
+fig
+```
+
+As a final complication, `domaincolor!` can't change the aspect ratio
+of a plot, hence we have to set it to square at the time of creation,
+giving finally the function (where we also pass keyword arguments):
+```julia
+function riemann(f; kwargs...)
+    fig = Figure()
+    ax11 = Axis(fig[1,1], aspect=1)
+    domaincolor!(ax11, z -> abs(z) <= 1 ? f(z) : NaN; kwargs...)
+    ax12 = Axis(fig[1,2], aspect=1)
+    domaincolor!(ax12, z -> abs(z) <= 1 ? f(1/z) : NaN; kwargs...)
+    fig
+end
+```
+
+For the sine function this for instance gives:
+```@example
+using DomainColoring, CairoMakie # hide
+function riemann(f; kwargs...) # hide
+    fig = Figure() # hide
+    ax11 = Axis(fig[1,1], aspect=1) # hide
+    domaincolor!(ax11, z -> abs(z) <= 1 ? f(z) : NaN; kwargs...) # hide
+    ax12 = Axis(fig[1,2], aspect=1) # hide
+    domaincolor!(ax12, z -> abs(z) <= 1 ? f(1/z) : NaN; kwargs...) # hide
+    fig # hide
+end # hide
+riemann(sin, abs=true)
+resize!(current_figure(), 620, 300) #hide
+current_figure() #hide
+```
