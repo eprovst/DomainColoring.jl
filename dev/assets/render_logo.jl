@@ -1,10 +1,8 @@
-using CairoMakie, DomainColoring
+using Images
+import DomainColoring as DC
 
-fig = Figure(resolution=(500, 500), figure_padding=0)
-axs = Axis(fig[1, 1])
 
-domaincolor!(axs, z -> im*(z+.1im)^3-1, 2.5, all=true)
+fig = DC.renderimage(z -> im*(z+.1im)^3-1,
+                     w -> DC.domaincolorshader(w; all=true), 2.5)
 
-hidedecorations!(axs)
-tightlimits!(axs)
 save("logo.png", fig)
