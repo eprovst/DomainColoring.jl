@@ -11,7 +11,7 @@ which is set to `:auto` will use the viewport resolution to determine
 the number of samples. Note that this can make plotting very slow.
 
 Finally, in a similar fashion to `DomainColoring.@shadedplot`, one can
-use `DomainColoringToy.@interactiveshadedplot` to create custom plots.
+use `DomainColoringToy.@shadedplot` to create custom plots.
 
 ## Installation
 `DomainColoringToy` is a different package and hence has to be installed

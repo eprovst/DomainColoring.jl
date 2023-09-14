@@ -44,12 +44,6 @@ function _grid(
         polar = false,
     )
 
-    # set carthesian grid if no options given
-    if all(b -> b isa Bool && !b,
-           (real, imag, rect, angle, abs, polar))
-        rect = true
-    end
-
     # carthesian checker plot
     if rect isa Bool
         if rect
@@ -70,19 +64,22 @@ function _grid(
             angle = true
             abs = true
         end
+    elseif polar isa Function
+        angle = true
+        abs = polar
     elseif length(polar) > 1
         angle = polar[1]
         abs = polar[2]
     else
-        angle = 2round(π*polar)
+        angle = 2max(round(π/log(polar)), 4)
         abs = polar
     end
 
     # set defaults
     (real  isa Bool && real)  && (real = 1)
     (imag  isa Bool && imag)  && (imag = 1)
-    (angle isa Bool && angle) && (angle = 6)
-    (abs   isa Bool && abs)   && (abs = 1)
+    (angle isa Bool && angle) && (angle = 8)
+    (abs   isa Bool && abs)   && (abs = ℯ)
 
     # set the transform
     saw(x) = mod(x, 1)
@@ -94,11 +91,11 @@ function _grid(
 
     g = 1.0
     if real > 0
-        r = real * Base.real(w)
+        r = Base.real(w) / real
         isfinite(r) && (g *= trf(r))
     end
     if imag > 0
-        i = imag * Base.imag(w)
+        i = Base.imag(w) / imag
         isfinite(i) && (g *= trf(i))
     end
     if angle > 0
@@ -109,8 +106,11 @@ function _grid(
         a = angle * Base.angle(w) / 2π
         isfinite(a) && (g *= trf(a))
     end
-    if abs > 0
-        m = abs * log(Base.abs(w))
+    if abs isa Function
+        m = abs(Base.abs(w))
+        isfinite(m) && (g *= trf(m))
+    elseif abs > 0
+        m = log(abs, Base.abs(w))
         isfinite(m) && (g *= trf(m))
     end
 
@@ -124,8 +124,6 @@ function _grid(
 end
 
 _grid(type, w, args::NamedTuple) = _grid(type, w; args...)
-
-_grid(type, w, arg::Bool) = arg ? _grid(type, w) : 1.0
 
 _grid(type, w, arg) = _grid(type, w; rect=arg)
 
@@ -268,46 +266,6 @@ function domaincolorshader(
 end
 
 """
-    DomainColoring.pdphaseplotshader(
-        w :: Complex;
-        box = nothing,
-    )
-
-Shades a complex value **`w`** as a phase plot using
-[ColorCET](https://colorcet.com)'s CBC1 cyclic color map for
-protanopic and deuteranopic viewers.
-
-See [`pdphaseplot`](@ref) for more information.
-"""
-function pdphaseplotshader(
-        w;
-        box = nothing,
-    )
-
-    _add_box(w, _color_angle(w, :CBC1), box)
-end
-
-"""
-    DomainColoring.tphaseplotshader(
-        w :: Complex;
-        box = nothing,
-    )
-
-Shades a complex value **`w`** as a phase plot using
-[ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for
-titranopic viewers.
-
-See [`tphaseplot`](@ref) for more information.
-"""
-function tphaseplotshader(
-        w;
-        box = nothing,
-    )
-
-    _add_box(w, _color_angle(w, :CBTC1), box)
-end
-
-"""
     DomainColoring.checkerplotshader(
         w :: Complex;
         real = false,
@@ -377,6 +335,12 @@ function sawplotshader(
         box = nothing,
     )
 
+    # shortcut if there is no grid to add
+    if all(b -> (b isa Bool) && !b,
+           (real, imag, rect, angle, abs, polar))
+        return _add_box(w, _color_angle(w, color), box)
+    end
+
     g = _grid(SawGrid, w; real, imag, rect, angle, abs, polar)
 
     if color isa Bool && !color
@@ -384,7 +348,6 @@ function sawplotshader(
         isnothing(box) ? c : _add_box(w, convert(RGB, c), box)
     else
         c = convert(Lab, _color_angle(w, color))
-        c = Lab(c.l + 20g - 10, c.a, c.b)
-        _add_box(w, c, box)
+        _add_box(w, Lab(c.l + 20g - 10, c.a, c.b), box)
     end
 end

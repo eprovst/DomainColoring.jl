@@ -1,4 +1,4 @@
-using .Plots
+import .Plots
 
 # Plots.jl specific version of `shadedplot` and `shadedplot!`
 for (modifying, target) in
@@ -31,7 +31,7 @@ for (modifying, target) in
                   :(attr = kwargs)
               end)
 
-            $pname($(target...), r, i,
+            Plots.$pname($(target...), r, i,
                 reverse(renderimage(f, shader, limits, pixels), dims=1);
                 attr...)
         end

@@ -139,7 +139,7 @@ Setting `real = true` and `imag = true` can be abbreviated to
 
 Alternatively one can also display a polar grid by setting
 `polar = true`, giving one band per unit increase of ``\log|f(z)|`` and
-six bands per ``2\pi`` increase of ``\arg(f(z))``.
+eight bands per ``2\pi`` increase of ``\arg(f(z))``.
 ```@example
 using CairoMakie, DomainColoring # hide
 sawplot(z -> z, 5, polar=true)
@@ -152,11 +152,13 @@ nothing # hide
 As with `rect = true`, `polar = true` is an abbreviation for
 `abs = true` and `angle = true`, showing magnitude and phase
 respectively. Now is a good time to mention that most arguments
-discussed so far also accept numbers, modifying the rate of the stripes.
-For example, we get for magnitude:
+discussed so far also accept numbers, modifying the width or rate of the
+stripes. For example, we can change the basis of the logarithm used for
+the magnitude (alternatively one can also pass a function as in
+[`domaincolor`](@ref), see next section):
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(z -> z, 5, abs=5)
+checkerplot(z -> z, 5, abs=1.1)
 resize!(current_figure(), 620, 600) #hide
 save("cpabs.png", current_figure()) # hide
 nothing # hide
@@ -179,7 +181,7 @@ number. If we set `phase` to a number, this will be used for `abs` and a
 suitable integer rate will be chosen for `angle`, for instance:
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(sin, (5, 2), polar=4)
+checkerplot(sin, (5, 2), polar=1.5)
 resize!(current_figure(), 620, 280) #hide
 save("cppolarsin.png", current_figure()) # hide
 nothing # hide
@@ -214,7 +216,7 @@ For `grid` these options are identical to `checkerplot`, for example an
 analogous example to the penultimate one of last section, is given by:
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(sin, (5, 2), grid=(polar=4,))
+domaincolor(sin, (5, 2), grid=(polar=1.5,))
 resize!(current_figure(), 620, 280) #hide
 save("dcpolarsin.png", current_figure()) # hide
 nothing # hide

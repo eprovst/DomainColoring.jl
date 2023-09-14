@@ -16,10 +16,8 @@ using Reexport
 @reexport using GLMakie
 import DomainColoring as DC
 
-export domaincolor, checkerplot, sawplot, pdphaseplot, tphaseplot
-
 """
-    DomainColoringToy.interactiveshadedplot(
+    DomainColoringToy.shadedplot(
         f :: "Complex -> Complex",
         shader :: "Complex -> Color",
         limits = (-1, 1, -1, 1),
@@ -45,9 +43,9 @@ auto updating.
   for both if only one number is provided. If either is `:auto`, the
   viewport resolution is used.
 
-Keyword arguments are passed to Makie.
+Keyword arguments are passed to GLMakie.
 """
-function interactiveshadedplot(
+function shadedplot(
         f,
         shader,
         limits = (-1, 1, -1, 1),
@@ -119,7 +117,7 @@ end
 
 
 """
-    DomainColoringToy.@interactiveshadedplot(
+    DomainColoringToy.@shadedplot(
         basename,
         shaderkwargs,
         shader
@@ -135,7 +133,7 @@ function `Complex -> Color` and is used to shade the resulting plot.
 
 See the source for examples.
 """
-macro interactiveshadedplot(fname, shaderkwargs, shader)
+macro shadedplot(fname, shaderkwargs, shader)
     # interpret shaderkwargs as keyword arguments
     skwargs = [Expr(:kw, p...) for
                p in pairs(__module__.eval(shaderkwargs))]
@@ -149,11 +147,13 @@ macro interactiveshadedplot(fname, shaderkwargs, shader)
                 kwargs...
             )
 
-            DomainColoringToy.interactiveshadedplot(
+            DomainColoringToy.shadedplot(
                 f, $shader, limits, pixels; kwargs...)
         end
     end
 end
+
+export domaincolor
 
 """
     domaincolor(
@@ -168,7 +168,7 @@ end
         kwargs...
     )
 
-Takes a complex function and produces it's domain coloring as an
+Takes a complex function and produces it's domain coloring plot as an
 interactive GLMakie plot.
 
 Red corresponds to phase ``0``, yellow to ``\\frac{\\pi}{3}``, green
@@ -198,7 +198,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   parameters `base`, `transform`, or `sigma`. `base` changes the base of
   the logarithm, as before. `transform` is the function applied to the
   magnitude (`m -> log(base, m)` by default), and `sigma` changes the
-  rate at which zeros and poles are colored when `base = Inf`.
+  rate at which zeros and poles are colored and implies `base = Inf`.
 
 - **`grid`** plots points with integer real or imaginary part as black
   dots. More complicated arguments can be passed as a named tuple in a
@@ -207,18 +207,18 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
 
-- **`all`** is a shortcut for `abs = true` and `grid = true`.
+- **`all`** is a shortcut for `abs = true`, `grid = true`, and
+  `color = true`.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
   within the box `a` and `b` in the color `s`. Can also be a list of
   multiple boxes.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 domaincolor
 
-@interactiveshadedplot(
-    domaincolor,
+@shadedplot(domaincolor,
     (abs = false,
      grid = false,
      color = true,
@@ -232,91 +232,7 @@ domaincolor
         w -> DC.domaincolorshader(w; abs, grid, color, all, box)
     end)
 
-"""
-    pdphaseplot(
-        f :: "Complex -> Complex",
-        limits = (-1, 1, -1, 1);
-        pixels = (480, 480),
-        box = nothing,
-        kwargs...
-    )
-
-Takes a complex valued function and produces a phase plot as an
-interactive GLMakie plot using [ColorCET](https://colorcet.com)'s CBC1
-cyclic color map for protanopic and deuteranopic viewers.
-
-Yellow corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, blue
-to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
-
-# Arguments
-
-- **`f`** is the complex function to plot.
-
-- **`limits`** are the limits of the rectangle to plot, in the format
-  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
-  instead they are take symmetric along the real and imaginary axis.
-
-# Keyword Arguments
-
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
-
-- **`box`** if set to `(a, b, s)` shades the area where the output is
-  within the box `a` and `b` in the color `s`. Can also be a list of
-  multiple boxes.
-
-Remaining keyword arguments are passed to Makie.
-"""
-pdphaseplot
-
-@interactiveshadedplot(pdphaseplot,
-    (box = nothing,),
-    w -> DC.pdphaseplotshader(w; box))
-
-"""
-    tphaseplot(
-        f :: "Complex -> Complex",
-        limits = (-1, 1, -1, 1);
-        pixels = (480, 480),
-        box = nothing,
-        kwargs...
-    )
-
-Takes a complex valued function and produces a phase plot as an
-interactive GLMakie plot using [ColorCET](https://colorcet.com)'s CBTC1
-cyclic color map for titranopic viewers.
-
-Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
-``\\pi``, and black to ``\\frac{3\\pi}{2}``.
-
-# Arguments
-
-- **`f`** is the complex function to plot.
-
-- **`limits`** are the limits of the rectangle to plot, in the format
-  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
-  instead they are take symmetric along the real and imaginary axis.
-
-# Keyword Arguments
-
-- **`pixels`** is the size of the output in pixels, respectively, the
-  number of pixels along the real and imaginary axis, taking the same
-  for both if only one number is provided. If either is `:auto`, the
-  viewport resolution is used.
-
-- **`box`** if set to `(a, b, s)` shades the area where the output is
-  within the box `a` and `b` in the color `s`. Can also be a list of
-  multiple boxes.
-
-Remaining keyword arguments are passed to Makie.
-"""
-tphaseplot
-
-@interactiveshadedplot(tphaseplot,
-    (box = nothing,),
-    w -> DC.tphaseplotshader(w; box))
+export checkerplot
 
 """
     checkerplot(
@@ -353,23 +269,29 @@ GLMakie plot.
   viewport resolution is used.
 
 If none of the below options are set, the plot defaults to `rect = true`.
-Numbers can be provided instead of booleans to override the default rates.
 
 - **`real`** plots black and white stripes orthogonal to the real axis
-  at a rate of one stripe per unit.
+  at a rate of one stripe per unit increase. If set to a number this
+  will be used as width instead.
 
 - **`imag`** plots black and white stripes orthogonal to the imaginary
-  axis at a rate of one stripe per unit.
+  axis at a rate of one stripe per unit increase. If set to a number
+  this will be used as width instead.
 
 - **`rect`** is a shortcut for `real = true` and `imag = true`.
 
 - **`angle`** plots black and white stripes orthogonal to the phase
-  angle at a rate of six stripes per full rotation.
+  angle at a rate of eight stripes per full rotation. Can be set to an
+  integer to specify a different rate.
 
 - **`abs`** plots black and white stripes at a rate of one stripe per
-  unit increase of the natural logarithm of the magnitude.
+  unit increase of the natural logarithm of the magnitude. If set to
+  a number this is used as the base of the logarithm. When set to a
+  function, unit increases of its output are used instead.
 
-- **`phase`** is a shortcut for `angle = true` and `abs = true`.
+- **`polar`** is a shortcut for `angle = true` and `abs = true`. Can
+  also be set to the basis to use for `abs`, then a suitable rate for
+  `angle` will be selected.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
   within the box `a` and `b` in the color `s`. Can also be a list of
@@ -377,11 +299,11 @@ Numbers can be provided instead of booleans to override the default rates.
 
 - **`hicontrast`** uses black and white instead of the softer defaults.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 checkerplot
 
-@interactiveshadedplot(checkerplot,
+@shadedplot(checkerplot,
     (real = false,
      imag = false,
      rect = false,
@@ -390,9 +312,18 @@ checkerplot
      polar = false,
      box = nothing,
      hicontrast = false),
-    w -> DC.checkerplotshader(
-        w; real, imag, rect, angle, abs, polar, box, hicontrast
-    ))
+    begin
+        # set carthesian grid if no options given
+        if all(b -> b isa Bool && !b,
+               (real, imag, rect, angle, abs, polar))
+            rect = true
+        end
+        w -> DC.checkerplotshader(
+            w; real, imag, rect, angle, abs, polar, box, hicontrast
+        )
+    end)
+
+export sawplot
 
 """
     sawplot(
@@ -410,7 +341,8 @@ checkerplot
         kwargs...
     )
 
-Takes a complex function and produces a saw plot as a Makie plot.
+Takes a complex function and produces a saw plot as an interactive
+GLMakie plot.
 
 # Arguments
 
@@ -428,23 +360,29 @@ Takes a complex function and produces a saw plot as a Makie plot.
   viewport resolution is used.
 
 If none of the below options are set, the plot defaults to `rect = true`.
-Numbers can be provided instead of booleans to override the default rates.
 
 - **`real`** plots black to white ramps orthogonal to the real axis at a
-  rate of one ramp per unit.
+  rate of one ramp per unit increase. If set to a number this will be
+  used as width instead.
 
 - **`imag`** plots black to white ramps orthogonal to the imaginary axis
-  at a rate of one ramp per unit.
+  at a rate of one ramp per unit increase. If set to a number this will
+  be used as width instead.
 
 - **`rect`** is a shortcut for `real = true` and `imag = true`.
 
 - **`angle`** plots black to white ramps orthogonal to the phase angle
-  at a rate of six ramps per full rotation.
+  at a rate of eight ramps per full rotation. Can be set to an integer
+  to specify a different rate.
 
 - **`abs`** plots black to white ramps at a rate of one ramp per unit
-  increase of the natural logarithm of the magnitude.
+  increase of the natural logarithm of the magnitude. If set to a number
+  this is used as the base of the logarithm. When set to a function,
+  unit increases of its output are used instead.
 
-- **`phase`** is a shortcut for `angle = true` and `abs = true`.
+- **`polar`** is a shortcut for `angle = true` and `abs = true`. Can
+  also be set to the basis to use for `abs`, then a suitable rate for
+  `angle` will be selected.
 
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
@@ -453,11 +391,11 @@ Numbers can be provided instead of booleans to override the default rates.
   within the box `a` and `b` in the color `s`. Can also be a list of
   multiple boxes.
 
-Remaining keyword arguments are passed to Makie.
+Remaining keyword arguments are passed to the plotting backend.
 """
 sawplot
 
-@interactiveshadedplot(sawplot,
+@shadedplot(sawplot,
     (real = false,
      imag = false,
      rect = false,
@@ -466,8 +404,179 @@ sawplot
      polar = false,
      color = false,
      box = nothing),
+    begin
+        # set carthesian grid if no options given
+        if all(b -> b isa Bool && !b,
+               (real, imag, rect, angle, abs, polar))
+            rect = true
+        end
+        w -> DC.sawplotshader(
+            w; real, imag, rect, angle, abs, polar, color, box
+        )
+    end)
+
+export pdphaseplot
+
+"""
+    pdphaseplot(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        box = nothing,
+        kwargs...
+    )
+
+Takes a complex valued function and produces a phase plot using
+[ColorCET](https://colorcet.com)'s CBC1 cyclic color map for protanopic
+and deuteranopic viewers as an interactive GLMakie plot.
+
+Yellow corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, blue
+to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  viewport resolution is used.
+
+- **`real`** plots black to white ramps orthogonal to the real axis at a
+  rate of one ramp per unit increase. If set to a number this will be
+  used as width instead.
+
+- **`imag`** plots black to white ramps orthogonal to the imaginary axis
+  at a rate of one ramp per unit increase. If set to a number this will
+  be used as width instead.
+
+- **`rect`** is a shortcut for `real = true` and `imag = true`.
+
+- **`angle`** plots black to white ramps orthogonal to the phase angle
+  at a rate of eight ramps per full rotation. Can be set to an integer
+  to specify a different rate.
+
+- **`abs`** plots black to white ramps at a rate of one ramp per unit
+  increase of the natural logarithm of the magnitude. If set to a number
+  this is used as the base of the logarithm. When set to a function,
+  unit increases of its output are used instead.
+
+- **`polar`** is a shortcut for `angle = true` and `abs = true`. Can
+  also be set to the basis to use for `abs`, then a suitable rate for
+  `angle` will be selected.
+
+- **`box`** if set to `(a, b, s)` shades the area where the output is
+  within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
+Remaining keyword arguments are passed to the plotting backend.
+"""
+pdphaseplot
+
+@shadedplot(pdphaseplot,
+    (real = false,
+     imag = false,
+     rect = false,
+     angle = false,
+     abs = false,
+     polar = false,
+     box = nothing),
     w -> DC.sawplotshader(
-        w; real, imag, rect, angle, abs, polar, color, box
+        w; real, imag, rect, angle, abs, polar, color=:CBC1, box
+    ))
+
+export tphaseplot
+
+"""
+    tphaseplot(
+        f :: "Complex -> Complex",
+        limits = (-1, 1, -1, 1);
+        pixels = (480, 480),
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        box = nothing,
+        kwargs...
+    )
+
+Takes a complex valued function and produces a phase plot using
+[ColorCET](https://colorcet.com)'s CBTC1 cyclic color map for titranopic
+viewers as an interactive GLMakie plot.
+
+Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
+``\\pi``, and black to ``\\frac{3\\pi}{2}``.
+
+# Arguments
+
+- **`f`** is the complex function to plot.
+
+- **`limits`** are the limits of the rectangle to plot, in the format
+  `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
+  instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`pixels`** is the size of the output in pixels, respectively, the
+  number of pixels along the real and imaginary axis, taking the same
+  for both if only one number is provided. If either is `:auto`, the
+  viewport resolution is used.
+
+- **`real`** plots black to white ramps orthogonal to the real axis at a
+  rate of one ramp per unit increase. If set to a number this will be
+  used as width instead.
+
+- **`imag`** plots black to white ramps orthogonal to the imaginary axis
+  at a rate of one ramp per unit increase. If set to a number this will
+  be used as width instead.
+
+- **`rect`** is a shortcut for `real = true` and `imag = true`.
+
+- **`angle`** plots black to white ramps orthogonal to the phase angle
+  at a rate of eight ramps per full rotation. Can be set to an integer
+  to specify a different rate.
+
+- **`abs`** plots black to white ramps at a rate of one ramp per unit
+  increase of the natural logarithm of the magnitude. If set to a number
+  this is used as the base of the logarithm. When set to a function,
+  unit increases of its output are used instead.
+
+- **`polar`** is a shortcut for `angle = true` and `abs = true`. Can
+  also be set to the basis to use for `abs`, then a suitable rate for
+  `angle` will be selected.
+
+- **`box`** if set to `(a, b, s)` shades the area where the output is
+  within the box `a` and `b` in the color `s`. Can also be a list of
+  multiple boxes.
+
+Remaining keyword arguments are passed to the plotting backend.
+"""
+tphaseplot
+
+@shadedplot(tphaseplot,
+    (real = false,
+     imag = false,
+     rect = false,
+     angle = false,
+     abs = false,
+     polar = false,
+     box = nothing),
+    w -> DC.sawplotshader(
+        w; real, imag, rect, angle, abs, polar, color=:CBTC1, box
     ))
 
 end
