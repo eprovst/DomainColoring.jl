@@ -33,16 +33,17 @@ end
   instead they are take symmetric along the real and imaginary axis.
 """
 function renderimage!(
-        img,
+        img::Matrix{C},
         f,
         shader,
         limits = (-1, 1, -1, 1),
-    )
+    ) where C
 
     limits = _expandlimits(limits)
     r = range(limits[1], limits[2], length=size(img, 2))
     i = range(limits[4], limits[3], length=size(img, 1))
-    broadcast!((r, i) -> shader(f(r + im*i)), img, r', i)
+    shd(w) = isnan(w) ? zero(C) : convert(C, shader(w))
+    broadcast!((r, i) -> shd(f(r + im*i)), img, r', i)
 end
 
 """
@@ -75,7 +76,7 @@ function renderimage(
     )
 
     length(pixels) == 1 && (pixels = (pixels, pixels))
-    img = Matrix{RGB{Float64}}(undef, pixels[1], pixels[2])
+    img = Matrix{RGBA{Float64}}(undef, pixels[1], pixels[2])
     renderimage!(img, f, shader, limits)
     return img
 end
