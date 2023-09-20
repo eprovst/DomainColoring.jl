@@ -135,7 +135,10 @@ _color_angle(w, arg::Function) = arg(mod(angle(w), 2π))
 _color_angle(w, arg::ColorScheme) = get(arg, mod(angle(w) / 2π, 1))
 
 function _color_angle(w, arg::Symbol)
-    if arg == :CBC1 || arg == :pd
+    if arg == :print
+      c = labsweep(angle(w))
+      Lab(c.l + 5, .7c.a, .7c.b)
+    elseif arg == :CBC1 || arg == :pd
       get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
           mod(-angle(w) / 2π + .5, 1))
     elseif arg == :CBTC1 || arg == :t

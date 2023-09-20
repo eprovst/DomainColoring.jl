@@ -89,6 +89,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
+  If set to `:print` a desaturated version of the default is used.
 
 - **`all`** is a shortcut for `abs = true`, `grid = true`, and
   `color = true`.
@@ -265,6 +266,7 @@ If none of the below options are set, the plot defaults to `rect = true`.
 
 - **`color`** toggles coloring of the phase angle. Can also be set to
   either the name of, or a `ColorScheme`, or a function `θ -> Color`.
+  If set to `:print` a desaturated version of the default is used.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
   within the box `a` and `b` in the color `s`. Can also be a list of

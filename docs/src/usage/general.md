@@ -274,12 +274,23 @@ can add a discretization effect:
 ```@example
 using CairoMakie, DomainColoring # hide
 discrangle(θ) = DomainColoring.labsweep(π/10 * floor(10/π * θ))
-domaincolor(tan, color=discrangle)
+domaincolor(tan, π/2, color=discrangle)
 resize!(current_figure(), 620, 600) #hide
 save("dsccolor.png", current_figure()) # hide
 nothing # hide
 ```
 ![](dsccolor.png)
+
+There is also a `:print` option that uses a desaturated version of the
+default color scheme, which is more suitable for consumer grade printers.
+```@example
+using CairoMakie, DomainColoring # hide
+domaincolor(tan, π/2, color=:print)
+resize!(current_figure(), 620, 600) #hide
+save("dscprint.png", current_figure()) # hide
+nothing # hide
+```
+![](dscprint.png)
 
 Finally, if no coloring of the phase is wanted, we can set
 `color = false`.

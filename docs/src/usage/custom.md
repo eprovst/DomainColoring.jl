@@ -5,8 +5,8 @@ A shader function (a map from complex numbers to colors) is applied to
 the input function `f` applied to some grid.
 
 The specification of this grid, the `pixels` option, the axis limiting
-and the interface with Makie are identical throughout DomainColoring and
-stem from the internal macro `@shadedplot`.
+and the interface with Plots and Makie are identical throughout
+DomainColoring and stem from the internal macro `@shadedplot`.
 
 An example makes this clear. Let's say we want a plot where integer grid
 lines of the real part and the imaginary part in different colors. A
