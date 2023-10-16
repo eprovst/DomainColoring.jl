@@ -201,15 +201,27 @@ function _add_box(w, c, sqs)
     return c
 end
 
-function _add_box(w, c::C, sq::Tuple{<:Any, <:Any, <:Color}) where C <: Color
+# domain function
+function _add_box(w, c::C, sq::Tuple{<:Function, <:Color}) where C <: Color
+    f, s = sq
+    f(w) ? convert(C, s) : c
+end
+
+function _add_box(w, c::C, sq::Tuple{<:Function, <:Any}) where C <: Color
+    f, s = sq
+    _add_box(w, c, (f, parse(C, s)))
+end
+
+# normal box
+function _add_box(w, c::C, sq::Tuple{<:Number, <:Number, <:Color}) where C <: Color
     a, b, s = sq
-    r, i = reim(w)
     mr, Mr = minmax(real(a), real(b))
     mi, Mi = minmax(imag(a), imag(b))
+    r, i = reim(w)
     (mr <= r <= Mr) && (mi <= i <= Mi) ? convert(C, s) : c
 end
 
-function _add_box(w, c::C, sq::Tuple{<:Any, <:Any, <:Any}) where C <: Color
+function _add_box(w, c::C, sq::Tuple{<:Number, <:Number, <:Any}) where C <: Color
     a, b, s = sq
     _add_box(w, c, (a, b, parse(C, s)))
 end

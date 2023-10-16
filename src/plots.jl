@@ -95,7 +95,8 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   `color = true`.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
-  within the box `a` and `b` in the color `s`. Can also be a list of
+  within the box `a` and `b` in the color `s` when set to `(f, s)` the
+  colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
 Remaining keyword arguments are passed to the plotting backend.
@@ -176,7 +177,8 @@ If none of the below options are set, the plot defaults to `rect = true`.
   `angle` will be selected.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
-  within the box `a` and `b` in the color `s`. Can also be a list of
+  within the box `a` and `b` in the color `s` when set to `(f, s)` the
+  colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
 - **`hicontrast`** uses black and white instead of the softer defaults.
@@ -269,7 +271,8 @@ If none of the below options are set, the plot defaults to `rect = true`.
   If set to `:print` a desaturated version of the default is used.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
-  within the box `a` and `b` in the color `s`. Can also be a list of
+  within the box `a` and `b` in the color `s` when set to `(f, s)` the
+  colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
 Remaining keyword arguments are passed to the plotting backend.
@@ -358,7 +361,8 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
   `angle` will be selected.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
-  within the box `a` and `b` in the color `s`. Can also be a list of
+  within the box `a` and `b` in the color `s` when set to `(f, s)` the
+  colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
 Remaining keyword arguments are passed to the plotting backend.
@@ -439,7 +443,8 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
   `angle` will be selected.
 
 - **`box`** if set to `(a, b, s)` shades the area where the output is
-  within the box `a` and `b` in the color `s`. Can also be a list of
+  within the box `a` and `b` in the color `s` when set to `(f, s)` the
+  colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
 Remaining keyword arguments are passed to the plotting backend.
