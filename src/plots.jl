@@ -53,7 +53,7 @@ export domaincolor, domaincolor!
         kwargs...
     )
 
-Takes a complex function and produces it's domain coloring plot.
+Takes a complex function and produces its domain coloring plot.
 
 Red corresponds to phase ``0``, yellow to ``\\frac{\\pi}{3}``, green
 to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to

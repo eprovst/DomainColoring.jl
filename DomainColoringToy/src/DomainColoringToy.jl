@@ -168,7 +168,7 @@ export domaincolor
         kwargs...
     )
 
-Takes a complex function and produces it's domain coloring plot as an
+Takes a complex function and produces its domain coloring plot as an
 interactive GLMakie plot.
 
 Red corresponds to phase ``0``, yellow to ``\\frac{\\pi}{3}``, green

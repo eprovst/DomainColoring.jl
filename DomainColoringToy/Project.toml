@@ -1,7 +1,7 @@
 name = "DomainColoringToy"
 uuid = "7cf40ad8-af6a-4ede-b3c6-2a9df3bce851"
 authors = ["Evert Provoost <evert@eprovst.net>"]
-version = "1.0.0"
+version = "1.0.1"
 
 [deps]
 DomainColoring = "c24f3079-adb7-4533-8329-9f66732e5e85"

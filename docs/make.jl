@@ -30,4 +30,5 @@ makedocs(
 deploydocs(
   repo = "github.com/eprovst/DomainColoring.jl.git",
   push_preview = true,
+  versions = ["stable" => "v^", "v1.#", "dev" => "dev"],
 )
