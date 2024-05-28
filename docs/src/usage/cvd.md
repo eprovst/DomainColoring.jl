@@ -10,14 +10,14 @@ color opponents are not (fully) distinguishable and hence the plot is
 rendered unreadable.
 
 `DomainColoring.jl` hence provides alternative phase plots that are
-clearly readable to them, based on color maps developed by
+clearly readable to them, using color maps developed by
 [Peter Kovesi](https://peterkovesi.com/papers/ColourMapsForColourBlindIAMG2017.pdf).
 
 !!! note
-    These color maps can also be used in the other plots as
-    `:pd`/`:CBC1` and `:t`/`:CBTC1`, respectively. However do note that
-    their use of black and white might interfere with other plotting
-    elements.
+    These color maps can also be used in the other plots by passing
+    `:pd`/`:CBC1` or `:t`/`:CBTC1`, respectively, to the `color` option.
+    However do note that their use of black and white might interfere
+    with other plotting elements.
 
 ## Phase plots for protanopia and deuteranopia
 
