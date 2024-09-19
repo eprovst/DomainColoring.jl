@@ -1,4 +1,7 @@
-import .MakieCore as MC
+module MakieExt
+
+import DomainColoring as DC
+import MakieCore as MC
 
 # Makie specific version of `shadedplot` and `shadedplot!`
 for (modifying, target) in
@@ -10,7 +13,7 @@ for (modifying, target) in
     hname = modifying ? :heatmap! : :heatmap
 
     @eval begin
-        function $fname(
+        function DC.$fname(
                $(target...),
                f :: Function,
                shader :: Function,
@@ -19,7 +22,7 @@ for (modifying, target) in
                kwargs...
             )
 
-            limits = _expandlimits(limits)
+            limits = DC._expandlimits(limits)
 
             # parse Makie options
             $(if !modifying
@@ -38,8 +41,10 @@ for (modifying, target) in
             r = [limits[1], limits[2]]
             i = [limits[4], limits[3]]
             MC.$hname($(target...), r, i,
-                      renderimage(f, shader, limits, pixels)'; attr...)
+                      DC.renderimage(f, shader, limits, pixels)';
+                      attr...)
         end
     end
 end
 
+end

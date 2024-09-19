@@ -1,4 +1,7 @@
-import .Plots
+module PlotsExt
+
+import DomainColoring as DC
+import Plots
 
 # Plots.jl specific version of `shadedplot` and `shadedplot!`
 for (modifying, target) in
@@ -10,7 +13,7 @@ for (modifying, target) in
     pname = modifying ? :plot! : :plot
 
     @eval begin
-        function $fname(
+        function DC.$fname(
                $(target...),
                f :: Function,
                shader :: Function,
@@ -19,7 +22,7 @@ for (modifying, target) in
                kwargs...
             )
 
-            limits = _expandlimits(limits)
+            limits = DC._expandlimits(limits)
             r = [limits[1], limits[2]]
             i = [limits[3], limits[4]]
 
@@ -32,9 +35,11 @@ for (modifying, target) in
               end)
 
             Plots.$pname($(target...), r, i,
-                reverse(renderimage(f, shader, limits, pixels), dims=1);
+                reverse(DC.renderimage(f, shader, limits, pixels),
+                        dims=1);
                 attr...)
         end
     end
 end
 
+end
