@@ -2,9 +2,9 @@
 
 Creating a perceptually smooth color wheel is in general a difficult
 task, and comes with inherent compromises. This document serves to list
-the design decisions taken for the phase wheel used in our
-implementation of domain coloring. We carefully selected the following
-analytical sweep through CIE L\*a\*b\* space:
+the design decisions taken for the phase wheel, which we call Arenberg,
+used in our implementation of domain coloring. We carefully selected the
+following analytical sweep through CIE L\*a\*b\* space:
 
 ```math
 \begin{aligned}
@@ -14,12 +14,12 @@ analytical sweep through CIE L\*a\*b\* space:
 \end{aligned}
 ```
 
-This is implemented by the internal function [`DomainColoring.labsweep`](@ref),
+This is implemented by the internal function [`DomainColoring.arenberg`](@ref),
 giving the following phase wheel.
 ```@example
 using DomainColoring, Colors #hide
 showable(::MIME"text/plain", ::AbstractVector{C}) where {C<:Colorant} = false #hide
-DomainColoring.labsweep.(0:.01:2π)
+DomainColoring.arenberg.(0:.01:2π)
 ```
 
 The main problem in the usually used HSV map is the erratic nature of everything,

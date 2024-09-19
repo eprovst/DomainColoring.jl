@@ -1,7 +1,7 @@
 using ColorTypes, ColorSchemes
 
 """
-    DomainColoring.labsweep(θ)
+    DomainColoring.arenberg(θ; print = false)
 
 Maps a phase angle **`θ`** to a color in CIE L\\*a\\*b\\* space by
 taking
@@ -14,14 +14,20 @@ taking
   \\end{aligned}
 ```
 
+If `print` is set to true, a desaturated version is used which is more
+easily reproduced on consumer grade printers.
+
 See [Phase Wheel](@ref) for more information.
 """
-function labsweep(θ)
+function arenberg(θ; print = false)
     θ = mod(θ, 2π)
-    Lab(67 - 12cos(3θ),
-        46cos(θ + .4) - 3,
-        46sin(θ + .4) + 16)
+    c = Lab(67 - 12cos(3θ),
+            46cos(θ + .4) - 3,
+            46sin(θ + .4) + 16)
+    print ? Lab(c.l + 5, .7c.a, .7c.b) : c
 end
+
+@deprecate labsweep(θ) arenberg(θ)
 
 # Grid types supported by _grid
 @enum GridType begin
@@ -128,7 +134,7 @@ _grid(type, w, args::NamedTuple) = _grid(type, w; args...)
 _grid(type, w, arg) = _grid(type, w; rect=arg)
 
 # Implements the angle coloring logic for shaders.
-_color_angle(w, arg::Bool) = arg ? labsweep(angle(w)) : Lab(80.0, 0.0, 0.0)
+_color_angle(w, arg::Bool) = arg ? arenberg(angle(w)) : Lab(80.0, 0.0, 0.0)
 
 _color_angle(w, arg::Function) = arg(mod(angle(w), 2π))
 
@@ -136,8 +142,7 @@ _color_angle(w, arg::ColorScheme) = get(arg, mod(angle(w) / 2π, 1))
 
 function _color_angle(w, arg::Symbol)
     if arg == :print
-      c = labsweep(angle(w))
-      Lab(c.l + 5, .7c.a, .7c.b)
+      arenberg(angle(w); print=true)
     elseif arg == :CBC1 || arg == :pd
       get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
           mod(-angle(w) / 2π + .5, 1))

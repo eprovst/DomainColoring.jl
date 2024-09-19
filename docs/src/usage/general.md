@@ -273,7 +273,7 @@ or a function `θ -> Color`, to `color`. As an example of the latter, we
 can add a discretization effect:
 ```@example
 using CairoMakie, DomainColoring # hide
-discrangle(θ) = DomainColoring.labsweep(π/10 * floor(10/π * θ))
+discrangle(θ) = DomainColoring.arenberg(π/10 * floor(10/π * θ))
 domaincolor(tan, π/2, color=discrangle)
 resize!(current_figure(), 620, 600) #hide
 save("dsccolor.png", current_figure()) # hide
