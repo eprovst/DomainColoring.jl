@@ -9,5 +9,6 @@
     <img src="https://img.shields.io/badge/docs-dev-blue.svg"/></a>
 </p>
 <p>
-  Domain colorings and checker plots of complex functions in Julia using smooth colors.
+  Domain colorings and checker plots of complex functions in Julia using
+  smooth colors.
 </p>
