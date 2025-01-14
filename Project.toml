@@ -18,6 +18,6 @@ PlotsExt = "Plots"
 [compat]
 ColorSchemes = "3"
 ColorTypes = "0.11, 0.12"
-MakieCore = "0.6, 0.7, 0.8"
+MakieCore = "0.6, 0.7, 0.8, 0.9"
 Plots = "1"
 julia = "1.9"
