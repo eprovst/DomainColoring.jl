@@ -49,10 +49,8 @@ following.
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5))
 resize!(current_figure(), 620, 340) #hide
-save("dcsincphase.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dcsincphase.png)
 
 One can additionally superimpose contour lines of the magnitude as
 sweeps of increasing lightness by setting `abs = true`. Where this
@@ -62,10 +60,8 @@ increase of lightness is taken proportional to the fractional part of
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5), abs=true)
 resize!(current_figure(), 620, 340) #hide
-save("dcsincabs.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dcsincabs.png)
 
 Finally, one can also add a dark grid where the imaginary or real part
 of ``f(z)`` is integer by setting `grid = true`.
@@ -73,10 +69,8 @@ of ``f(z)`` is integer by setting `grid = true`.
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5), grid=true)
 resize!(current_figure(), 620, 340) #hide
-save("dcsincgrid.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dcsincgrid.png)
 
 Of course these options can be combined, the common combination of
 `abs = true` and `grid = true` even has an abbreviation `all = true`.
@@ -84,10 +78,8 @@ Of course these options can be combined, the common combination of
 using CairoMakie, DomainColoring # hide
 domaincolor(sinc, (3, 1.5), all=true)
 resize!(current_figure(), 620, 340) #hide
-save("dcsincall.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dcsincall.png)
 
 The argument interface contains many further options, but we will delay
 their discussion until after introducing the [`checkerplot`](@ref) and
@@ -103,10 +95,8 @@ checkerplot of the identity function makes this clearer.
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5)
 resize!(current_figure(), 620, 600) #hide
-save("cprect.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cprect.png)
 
 A saw plot is similar but shows ramps instead of solid stripes, to get
 an idea of the direction of increase. Their interface is almost
@@ -117,10 +107,8 @@ The previous example as a saw plot would be:
 using CairoMakie, DomainColoring # hide
 sawplot(z -> z, 5)
 resize!(current_figure(), 620, 600) #hide
-save("sprect.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](sprect.png)
 
 You can limit the stripes to only show increase in the real or imaginary
 part by setting `real = true` or `imag = true`, respectively. Again the
@@ -129,10 +117,8 @@ previous example.
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5, real=true)
 resize!(current_figure(), 620, 600) #hide
-save("cpreal.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cpreal.png)
 
 Setting `real = true` and `imag = true` can be abbreviated to
 `rect = true`, which is identical to the default behaviour.
@@ -144,10 +130,8 @@ eight bands per ``2\pi`` increase of ``\arg(f(z))``.
 using CairoMakie, DomainColoring # hide
 sawplot(z -> z, 5, polar=true)
 resize!(current_figure(), 620, 600) #hide
-save("cppolar.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cppolar.png)
 
 As with `rect = true`, `polar = true` is an abbreviation for
 `abs = true` and `angle = true`, showing magnitude and phase
@@ -160,10 +144,8 @@ the magnitude (alternatively one can also pass a function as in
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z, 5, abs=1.1)
 resize!(current_figure(), 620, 600) #hide
-save("cpabs.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cpabs.png)
 
 and for phase:
 
@@ -171,10 +153,8 @@ and for phase:
 using CairoMakie, DomainColoring # hide
 sawplot(z -> z, 5, angle=10)
 resize!(current_figure(), 620, 600) #hide
-save("cpangle.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cpangle.png)
 
 Note, that for a [`checkerplot`](@ref) the latter we needs to be an even
 number. If we set `phase` to a number, this will be used for `abs` and a
@@ -183,10 +163,8 @@ suitable integer rate will be chosen for `angle`, for instance:
 using CairoMakie, DomainColoring # hide
 checkerplot(sin, (5, 2), polar=1.5)
 resize!(current_figure(), 620, 280) #hide
-save("cppolarsin.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cppolarsin.png)
 
 As mentioned before regions of the output plane can be colored using the
 `box` option, for example:
@@ -194,10 +172,8 @@ As mentioned before regions of the output plane can be colored using the
 using CairoMakie, DomainColoring # hide
 checkerplot(z -> z^2, 2, box=[(1,1im,:red), (-1-2im,-2-1im,:blue)])
 resize!(current_figure(), 620, 600) #hide
-save("cpboxes.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cpboxes.png)
 
 Finally, `hicontrast = true` can be used in [`checkerplot`](@ref) to
 plot in black and white instead of the slightly softer defaults, and
@@ -218,10 +194,8 @@ analogous example to the penultimate one of last section, is given by:
 using CairoMakie, DomainColoring # hide
 domaincolor(sin, (5, 2), grid=(polar=1.5,))
 resize!(current_figure(), 620, 280) #hide
-save("dcpolarsin.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dcpolarsin.png)
 
 (Note: unlike before, the rate of `angle` need not be even for grids.)
 
@@ -231,10 +205,8 @@ we for instance wanted to see orders of magnitude, we could look at:
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> z^3, 5, abs=10)
 resize!(current_figure(), 620, 600) #hide
-save("dcordermag.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dcordermag.png)
 
 If one does not want to look at the logarithm of the magnitude, but the
 magnitude itself, they can use the `transform` option, or pass a
@@ -243,10 +215,8 @@ function directly to `abs`, for instance:
 using CairoMakie, DomainColoring # hide
 domaincolor(sqrt, (-1, 19, -4, 4), abs=z->z)
 resize!(current_figure(), 620, 280) #hide
-save("dclinmag.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dclinmag.png)
 
 Finally, if we set the base to `Inf`, the magnitude is colored from
 black at zero to white at infinity, which we can use to illustrate the
@@ -255,10 +225,8 @@ Casorati–Weierstrass theorem:
 using CairoMakie, DomainColoring # hide
 domaincolor(z -> exp(1/z), .1, abs=Inf)
 resize!(current_figure(), 620, 600) #hide
-save("cwthm.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](cwthm.png)
 
 The harshness of these white an black areas can be changed using the
 `sigma` parameter, try for instance:
@@ -276,10 +244,8 @@ using CairoMakie, DomainColoring # hide
 discrangle(θ) = DomainColoring.arenberg(π/10 * floor(10/π * θ))
 domaincolor(tan, π/2, color=discrangle)
 resize!(current_figure(), 620, 600) #hide
-save("dsccolor.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dsccolor.png)
 
 There is also a `:print` option that uses a desaturated version of the
 default color scheme, which is more suitable for consumer grade printers.
@@ -287,10 +253,8 @@ default color scheme, which is more suitable for consumer grade printers.
 using CairoMakie, DomainColoring # hide
 domaincolor(tan, π/2, color=:print)
 resize!(current_figure(), 620, 600) #hide
-save("dscprint.png", current_figure()) # hide
-nothing # hide
+current_figure() # hide
 ```
-![](dscprint.png)
 
 Finally, if no coloring of the phase is wanted, we can set
 `color = false`.

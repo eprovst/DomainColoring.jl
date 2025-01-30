@@ -17,7 +17,7 @@ taking
 If `print` is set to true, a desaturated version is used which is more
 easily reproduced on consumer grade printers.
 
-See [Phase Wheel](@ref) for more information.
+See [The Arenberg Phase Wheel](@ref) for more information.
 """
 function arenberg(θ; print = false)
     θ = mod(θ, 2π)

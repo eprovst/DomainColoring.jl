@@ -12,8 +12,15 @@ import DomainColoringToy
 makedocs(
   sitename = "DomainColoring.jl",
   authors = "Evert Provoost",
+  repo="https://github.com/eprovst/DomainColoring.jl/blob/{commit}{path}#{line}",
+  format=Documenter.HTML(
+    repolink="https://github.com/eprovst/DomainColoring.jl/",
+    prettyurls=get(ENV, "CI", "false") == "true",
+    canonical="https://eprovst.github.io/DomainColoring.jl",
+    assets=["assets/style.css",]
+  ),
   pages = [
-    "Home" => "index.md",
+    hide("Home" => "index.md"),
     "Usage" => [
       "usage/tutorial.md",
       "usage/general.md",
@@ -22,9 +29,7 @@ makedocs(
     ],
     "Library" => "lib.md",
     "DomainColoringToy" => "dct.md",
-    "Design Choices" => [
-      "design/phasewheel.md",
-    ],
+    "Arenberg Phase Wheel" => "arenberg.md",
   ]
 )
 

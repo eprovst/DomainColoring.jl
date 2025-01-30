@@ -11,7 +11,8 @@ DomainColoring and stem from the internal macro `@shadedplot`.
 An example makes this clear. Let's say we want a plot where integer grid
 lines of the real part and the imaginary part in different colors. A
 shader implementing this could be:
-```julia
+```@example custom; continued = true
+using CairoMakie #hide
 using DomainColoring, Colors
 
 function shader(w, realcol, imagcol)
@@ -22,7 +23,7 @@ end
 ```
 
 Turning this into a plotting function is then as simple as:
-```julia
+```@example custom; continued = true
 import DomainColoring: @shadedplot
 
 @shadedplot(cgridplot,
@@ -33,23 +34,8 @@ import DomainColoring: @shadedplot
 This produces functions `cgridplot` and `cgridplot!`. Which give plots
 like:
 
-```@example
-using CairoMakie
-using DomainColoring, Colors # hide
-function shader(w, realcol, imagcol) # hide
-    r, i = reim(w) # hide
-    c = colorant"white" # hide
-    c = weighted_color_mean(abs(sinpi(r))^.06, c, realcol) # hide
-    weighted_color_mean(abs(sinpi(i))^.06, c, imagcol) # hide
-end # hide
-import DomainColoring: @shadedplot # hide
-@shadedplot(cgridplot, # hide
-    (realcol = colorant"red", imagcol = colorant"blue"), # hide
-    w -> shader(w, realcol, imagcol)) # hide
-
+```@example custom
 cgridplot(z -> im*z^3-1, 2.5)
 resize!(current_figure(), 620, 600) #hide
-save("example.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](example.png)

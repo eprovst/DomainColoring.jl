@@ -61,13 +61,11 @@ using CairoMakie, DomainColoring
 
 Then a simple phase plot can be made using
 ```@example
-using CairoMakie, DomainColoring # hide
+using CairoMakie, DomainColoring #hide
 domaincolor(z -> 2z + 1)
 resize!(current_figure(), 620, 600) #hide
-save("simplephaseexample.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](simplephaseexample.png)
 
 As expected we see a zero of multiplicity one at ``-0.5``,
 furthermore we see that `domaincolor` defaults to unit axis limits in
@@ -82,13 +80,11 @@ tells you more about the thing you are seeing:
 The number of times you go through these colors gives you the
 multiplicity. A pole of multiplicity two gives for instance:
 ```@example
-using CairoMakie, DomainColoring # hide
+using CairoMakie, DomainColoring #hide
 domaincolor(z -> 1 / z^2)
 resize!(current_figure(), 620, 600) #hide
-save("simplepoleexample.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](simplepoleexample.png)
 
 We've now looked at poles and zeroes, another interesting effect to see
 on a phase plot are
@@ -96,21 +92,19 @@ on a phase plot are
 implementation of the square root has a branch cut on the negative real
 axis, as we can see on the following figure.
 ```@example
-using CairoMakie, DomainColoring # hide
+using CairoMakie, DomainColoring #hide
 domaincolor(sqrt, [-10, 2, -2, 2])
 resize!(current_figure(), 620, 250) #hide
-save("sqrtexample.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](sqrtexample.png)
 
 There are a couple of things of note here. First, Julia allows us to
 simply pass `sqrt`, which here is equivalent to `z -> sqrt(z)`. Second,
 `domaincolor` accepts axis limits as an optional second argument
 (for those familiar with Julia: any indexable object will work).
 Finally, branch cuts give discontinuities in the phase plot (identifying
-these is greatly helped by the perceptual uniformity of the
-[Phase Wheel](@ref) used).
+these is greatly helped by the perceptual uniformity of
+[the phase wheel](@ref "The Arenberg Phase Wheel") used).
 
 We conclude by mentioning that you do not always need to specify all
 limits explicitly. If you want to take the same limit in all four
@@ -119,13 +113,11 @@ only two elements, these will be taken symmetric in the real and
 imaginary direction respectively. This way we can zoom in on the beauty
 of the essential singularity of ``e^\frac{1}{z}``.
 ```@example
-using CairoMakie, DomainColoring # hide
+using CairoMakie, DomainColoring #hide
 domaincolor(z -> exp(1/z), 0.5)
 resize!(current_figure(), 620, 600) #hide
-save("essentialsingexample.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](essentialsingexample.png)
 
 ## Plotting the `DomainColoring.jl` logo
 
@@ -138,10 +130,8 @@ of the magnitude and an integer grid. You can continue by reading the
 options, and the other provided plotting functions.
 
 ```@example
-using CairoMakie, DomainColoring # hide
+using CairoMakie, DomainColoring #hide
 domaincolor(z -> im*z^3-1, 2.5, all=true)
 resize!(current_figure(), 620, 600) #hide
-save("logoexample.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](logoexample.png)

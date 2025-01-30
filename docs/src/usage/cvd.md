@@ -26,13 +26,11 @@ method [`pdphaseplot`](@ref) hence uses lightness and a yellow-blue
 sweep to display phase instead.
 
 ```@example
-using CairoMakie, DomainColoring # hide
+using CairoMakie, DomainColoring #hide
 pdphaseplot(z -> exp(1/z), 0.5)
 resize!(current_figure(), 620, 600) #hide
-save("pdphaseexample.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](pdphaseexample.png)
 
 ## Phase plots for titranopia
 
@@ -41,10 +39,8 @@ The method [`tphaseplot`](@ref) hence uses lightness and a red-cyan
 sweep to display phase instead.
 
 ```@example
-using CairoMakie, DomainColoring # hide
+using CairoMakie, DomainColoring #hide
 tphaseplot(z -> exp(1/z), 0.5)
 resize!(current_figure(), 620, 600) #hide
-save("tphaseexample.png", current_figure()) # hide
-nothing # hide
+current_figure() #hide
 ```
-![](tphaseexample.png)
