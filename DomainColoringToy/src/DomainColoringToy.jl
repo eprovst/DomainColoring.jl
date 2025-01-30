@@ -1,7 +1,7 @@
 #==
  = DomainColoringToy
  =
- = Copyright (c) 2023 Evert Provoost. See LICENSE.
+ = Copyright (c) 2025 Evert Provoost. See LICENSE.
  =
  = Provided functionality is partially inspired by
  =
