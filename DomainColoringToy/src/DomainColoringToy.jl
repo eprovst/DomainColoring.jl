@@ -45,74 +45,99 @@ auto updating.
 
 Keyword arguments are passed to GLMakie.
 """
-function shadedplot(
-        f,
-        shader,
-        limits = (-1, 1, -1, 1),
-        pixels = (480, 480);
-        kwargs...
-    )
+shadedplot, shadedplot!
 
-    # sanitize input
-    pixels == :auto && (pixels = (:auto, :auto))
-    length(pixels) == 1 && (pixels = (pixels, pixels))
-    limits = DC._expandlimits(limits)
+for (modifying, target) in
+    ((false, ()),
+     (true, ()),
+     (true, (:target,)))
 
-    # parse Makie options
-    defaults = Attributes(
-        interpolate = true,
-        axis = (autolimitaspect = 1,)
-    )
-    attr = merge(Attributes(; kwargs...), defaults)
+    fname = modifying ? :shadedplot! : :shadedplot
+    hname = modifying ? :heatmap! : :heatmap
 
-    # setup observables to be used by update
-    img = Observable(
-        # tiny render to catch errors and setup type
-        DC.renderimage(f, shader, limits, (2, 2))
-    )
-    xl = Observable([limits[1], limits[2]])
-    yl = Observable([limits[3], limits[4]])
+    @eval begin
+        function $fname(
+                $(target...),
+                f :: Function,
+                shader :: Function,
+                limits = (-1, 1, -1, 1),
+                pixels = (480, 480);
+                kwargs...
+            )
 
-    # setup plot
-    # transpose as x and y are swapped in images
-    # reverse as y is reversed in images
-    plt = heatmap(xl, lift(reverse, yl), lift(adjoint, img);
-                  attr...)
+            # sanitize input
+            pixels == :auto && (pixels = (:auto, :auto))
+            length(pixels) == 1 && (pixels = (pixels, pixels))
+            limits = DC._expandlimits(limits)
 
-    # set default limits
-    xlims!(plt.axis, limits[1], limits[2])
-    ylims!(plt.axis, limits[3], limits[4])
+            # parse Makie options
+            $(if !modifying
+                  :(defaults = Attributes(;
+                      interpolate = true,
+                      axis = (autolimitaspect = 1,)))
+              else
+                  :(defaults = Attributes(; interpolate = true))
+              end)
+            attr = merge(Attributes(; kwargs...), defaults)
 
-    # update loop
-    function update(lims, res)
-        # set render limits to viewport
-        axs = (lims.origin[1], lims.origin[1] + lims.widths[1],
-               lims.origin[2], lims.origin[2] + lims.widths[2])
-        xl[] = [axs[1], axs[2]]
-        yl[] = [axs[3], axs[4]]
+            # setup observables to be used by update
+            img = Observable(
+                # tiny render to catch errors and setup type
+                DC.renderimage(f, shader, limits, (2, 2))
+            )
+            xl = Observable([limits[1], limits[2]])
+            yl = Observable([limits[3], limits[4]])
 
-        # get resolution if needed
-        px = map((p, r) -> p == :auto ? ceil(Int, 1.1r) : p,
-                 pixels, tuple(res...))
+            # setup plot
+            # transpose as x and y are swapped in images
+            # reverse as y is reversed in images
+            plt = $hname($(target...), xl, lift(reverse, yl),
+                         lift(adjoint, img); attr...)
 
-        # render new image reusing buffer if possible
-        if size(img.val) != px
-            img.val = DC.renderimage(f, shader, axs, px)
-        else
-            DC.renderimage!(img.val, f, shader, axs)
+            axis = $(if !modifying
+                        :(plt.axis)
+                    elseif isempty(target)
+                        :(current_axis())
+                    else
+                        :(target isa Axis ? target : target.axis)
+                    end)
+
+            # set default limits
+            xlims!(axis, limits[1], limits[2])
+            ylims!(axis, limits[3], limits[4])
+
+            # update loop
+            function update(lims, res)
+                # set render limits to viewport
+                axs = (lims.origin[1], lims.origin[1] + lims.widths[1],
+                       lims.origin[2], lims.origin[2] + lims.widths[2])
+                xl[] = [axs[1], axs[2]]
+                yl[] = [axs[3], axs[4]]
+
+                # get resolution if needed
+                px = map((p, r) -> p == :auto ? ceil(Int, 1.1r) : p,
+                         pixels, tuple(res...))
+
+                # render new image reusing buffer if possible
+                if size(img.val) != px
+                    img.val = DC.renderimage(f, shader, axs, px)
+                else
+                    DC.renderimage!(img.val, f, shader, axs)
+                end
+                notify(img)
+            end
+
+            # initial render
+            lims = axis.finallimits
+            res = axis.scene.camera.resolution
+            update(lims[], res[])
+
+            # observe updates
+            onany(update, lims, res)
+
+            return plt
         end
-        notify(img)
     end
-
-    # initial render
-    lims = plt.axis.finallimits
-    res = plt.axis.scene.camera.resolution
-    update(lims[], res[])
-
-    # observe updates
-    onany(update, lims, res)
-
-    return plt
 end
 
 
@@ -123,8 +148,8 @@ end
         shader
     )
 
-Macro emitting an implementation of **`fname`** in a similar fashion to
-the other plotting routines in this library, see for instance
+Macro emitting implementations of **`fname`** and **`fname!`** in a similar
+fashion to the other plotting routines in this library, see for instance
 [`domaincolor`](@ref).
 
 **`shaderkwargs`** is a named tuple setting keyword arguments used in
@@ -133,27 +158,34 @@ function `Complex -> Color` and is used to shade the resulting plot.
 
 See the source for examples.
 """
-macro shadedplot(fname, shaderkwargs, shader)
+macro shadedplot(basename, shaderkwargs, shader)
+    modifname = Symbol(basename, '!')
     # interpret shaderkwargs as keyword arguments
     skwargs = [Expr(:kw, p...) for
                p in pairs(__module__.eval(shaderkwargs))]
 
-    @eval __module__ begin
-        function $fname(
-                f :: Function,
-                limits = (-1, 1, -1, 1);
-                pixels = (480, 480),
-                $(skwargs...),
-                kwargs...
-            )
+    for (fname, sname, target) in
+        ((basename,  :shadedplot,  ()),
+         (modifname, :shadedplot!, ()),
+         (modifname, :shadedplot!, (:target,)))
+        @eval __module__ begin
+            function $fname(
+                    $(target...),
+                    f :: Function,
+                    limits = (-1, 1, -1, 1);
+                    pixels = (480, 480),
+                    $(skwargs...),
+                    kwargs...
+                )
 
-            DomainColoringToy.shadedplot(
-                f, $shader, limits, pixels; kwargs...)
+                DomainColoringToy.$sname($(target...), f, $shader,
+                                         limits, pixels; kwargs...)
+            end
         end
     end
 end
 
-export domaincolor
+export domaincolor, domaincolor!
 
 """
     domaincolor(
@@ -218,7 +250,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-domaincolor
+domaincolor, domaincolor!
 
 @shadedplot(domaincolor,
     (abs = false,
@@ -234,7 +266,7 @@ domaincolor
         w -> DC.domaincolorshader(w; abs, grid, color, all, box)
     end)
 
-export checkerplot
+export checkerplot, checkerplot!
 
 """
     checkerplot(
@@ -304,7 +336,7 @@ If none of the below options are set, the plot defaults to `rect = true`.
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-checkerplot
+checkerplot, checkerplot!
 
 @shadedplot(checkerplot,
     (real = false,
@@ -326,7 +358,7 @@ checkerplot
         )
     end)
 
-export sawplot
+export sawplot, sawplot!
 
 """
     sawplot(
@@ -398,7 +430,7 @@ If none of the below options are set, the plot defaults to `rect = true`.
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-sawplot
+sawplot, sawplot!
 
 @shadedplot(sawplot,
     (real = false,
@@ -420,7 +452,7 @@ sawplot
         )
     end)
 
-export pdphaseplot
+export pdphaseplot, pdphaseplot!
 
 """
     pdphaseplot(
@@ -489,7 +521,7 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-pdphaseplot
+pdphaseplot, pdphaseplot!
 
 @shadedplot(pdphaseplot,
     (real = false,
@@ -503,7 +535,7 @@ pdphaseplot
         w; real, imag, rect, angle, abs, polar, color=:CBC1, box
     ))
 
-export tphaseplot
+export tphaseplot, tphaseplot!
 
 """
     tphaseplot(
@@ -572,7 +604,7 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-tphaseplot
+tphaseplot, tphaseplot!
 
 @shadedplot(tphaseplot,
     (real = false,
