@@ -227,9 +227,9 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   this will be used as base of the logarithm instead, if set to `Inf`,
   zero magnitude will be colored black and poles white. Further granular
   control can be achieved by passing a named tuple with any of the
-  parameters `base`, `transform`, or `sigma`. `base` changes the base of
+  parameters `base`, `transform`, or `alpha`. `base` changes the base of
   the logarithm, as before. `transform` is the function applied to the
-  magnitude (`m -> log(base, m)` by default), and `sigma` changes the
+  magnitude (`m -> log(base, m)` by default), and `alpha` changes the
   rate at which zeros and poles are colored and implies `base = Inf`.
 
 - **`grid`** plots points with integer real or imaginary part as black

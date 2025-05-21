@@ -161,12 +161,12 @@ function _add_magnitude(
         c;
         base = ℯ,
         transform = nothing,
-        sigma = nothing,
+        alpha = nothing,
     )
 
     # add magnitude if requested
     if base > 0
-        if isfinite(base) && isnothing(sigma)
+        if isfinite(base) && isnothing(alpha)
             if isnothing(transform)
                 m = log(base, abs(w))
             else
@@ -174,11 +174,13 @@ function _add_magnitude(
             end
             isfinite(m) && (c = Oklab(c.l + .2mod(m, 1) - .1, c.a, c.b))
         else
-            isnothing(sigma) && (sigma = 0.02)
-            m = log(abs(w))
-            t = isfinite(m) ? exp(-sigma*m^2) : 0.0
-            g = 1.0(m > 0)
-            c = Oklab((1 - t)g + t*c.l, t*c.a, t*c.b)
+            isnothing(alpha) && (alpha = 2)
+            @assert alpha > 0 "alpha must be a positive value."
+            m = abs(w)
+            r = m^alpha / (m^alpha + 1)
+            isfinite(r) || (r = 1.0)
+            t = 1 - abs(1 - 2r)
+            c = Oklab((1 - t)*(r > 0.5) + t*c.l, t*c.a, t*c.b)
         end
     end
     return c

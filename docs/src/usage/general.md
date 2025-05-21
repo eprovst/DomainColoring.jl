@@ -219,19 +219,22 @@ current_figure() # hide
 ```
 
 Finally, if we set the base to `Inf`, the magnitude is colored from
-black at zero to white at infinity, which we can use to illustrate the
-Casorati–Weierstrass theorem:
+black at zero to white at infinity; using again the previous example:
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(z -> exp(1/z), .1, abs=Inf)
-resize!(current_figure(), 620, 600) #hide
+domaincolor(sqrt, (-1, 19, -4, 4), abs=Inf)
+resize!(current_figure(), 620, 280) #hide
 current_figure() # hide
 ```
 
 The harshness of these white an black areas can be changed using the
-`sigma` parameter, try for instance:
-```julia
-domaincolor(z -> exp(1/z), .1, abs=(sigma=0.001,))
+`alpha` parameter, which we can use to illustrate the
+Casorati–Weierstrass theorem:
+```@example
+using CairoMakie, DomainColoring # hide
+domaincolor(z -> exp(1/z), .1, abs=(alpha=.1,))
+resize!(current_figure(), 620, 600) #hide
+current_figure() # hide
 ```
 
 If one wants to change the coloring of the phase angle, they can pass a
