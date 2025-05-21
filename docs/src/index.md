@@ -15,10 +15,9 @@ versions using `GLMakie` are available as part of the [`DomainColoringToy.jl`
 package](@ref "DomainColoringToy"). Even more plots are defined by
 [`ComplexToys.jl`](https://eprovst.github.io/ComplexToys.jl/).
 
-The plots implemented here are inspired by the wonderful book by Wegert[^1],
-yet using a smooth curve through CIE L\*a\*b\* space, yielding a more
-perceptually uniform representation of the phase (see [The Arenberg Phase
-Wheel](@ref)).
+The plots implemented here are inspired by the wonderful book by Wegert[^1], yet
+using a smooth curve through Oklab space, yielding a more perceptually uniform
+representation of the phase (see [The Arenberg Phase Wheel](@ref)).
 
 [^1]:
     Elias Wegert, _Visual Complex Functions: An Introduction with Phase

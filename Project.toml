@@ -1,11 +1,11 @@
 name = "DomainColoring"
 uuid = "c24f3079-adb7-4533-8329-9f66732e5e85"
 authors = ["Evert Provoost <evert@eprovst.net>"]
-version = "1.1.0"
+version = "2.0.0"
 
 [deps]
+Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
-ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 
 [weakdeps]
 MakieCore = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
@@ -16,8 +16,8 @@ MakieExt = "MakieCore"
 PlotsExt = "Plots"
 
 [compat]
+Colors = "0.13"
 ColorSchemes = "3"
-ColorTypes = "0.11, 0.12"
-MakieCore = "0.6, 0.7, 0.8, 0.9"
+MakieCore = "0.8, 0.9"
 Plots = "1"
 julia = "1.9"

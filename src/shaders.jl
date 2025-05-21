@@ -1,17 +1,17 @@
-using ColorTypes, ColorSchemes
+using Colors, ColorSchemes
 
 """
     DomainColoring.arenberg(θ; print = false)
 
-Maps a phase angle **`θ`** to a color in CIE L\\*a\\*b\\* space by
+Maps a phase angle **`θ`** to a color in Oklab space by
 taking
 
 ```math
 \\begin{aligned}
-      L^* &= 67 - 12 \\cos(3\\theta), \\\\
-      a^* &= 46 \\cos(\\theta + .4) - 3, \\quad\\text{and} \\\\
-      b^* &= 46 \\sin(\\theta + .4) - 16.
-  \\end{aligned}
+    L &= .72 - .1 \\cos(3\\theta), \\\\
+    a &= .12 \\cos(\\theta + .4), \\quad\\text{and} \\\\
+    b &= .12 \\sin(\\theta + .4) + .02.
+\\end{aligned}
 ```
 
 If `print` is set to true, a desaturated version is used which is more
@@ -21,13 +21,11 @@ See [The Arenberg Phase Wheel](@ref) for more information.
 """
 function arenberg(θ; print = false)
     θ = mod(θ, 2π)
-    c = Lab(67 - 12cos(3θ),
-            46cos(θ + .4) - 3,
-            46sin(θ + .4) + 16)
-    print ? Lab(c.l + 5, .7c.a, .7c.b) : c
+    c = Oklab(0.72 - 0.1cos(3θ) ,
+              0.12cos(θ + .4),
+              0.12sin(θ + .4) + 0.02)
+    print ? Oklab(c.l + 0.025, .7c.a, .7c.b) : c
 end
-
-@deprecate labsweep(θ) arenberg(θ)
 
 # Grid types supported by _grid
 @enum GridType begin
@@ -134,7 +132,7 @@ _grid(type, w, args::NamedTuple) = _grid(type, w; args...)
 _grid(type, w, arg) = _grid(type, w; rect=arg)
 
 # Implements the angle coloring logic for shaders.
-_color_angle(w, arg::Bool) = arg ? arenberg(angle(w)) : Lab(80.0, 0.0, 0.0)
+_color_angle(w, arg::Bool) = arg ? arenberg(angle(w)) : Oklab(.8, 0.0, 0.0)
 
 _color_angle(w, arg::Function) = arg(mod(angle(w), 2π))
 
@@ -174,13 +172,13 @@ function _add_magnitude(
             else
                 m = transform(abs(w))
             end
-            isfinite(m) && (c = Lab(c.l + 20mod(m, 1) - 10, c.a, c.b))
+            isfinite(m) && (c = Oklab(c.l + .2mod(m, 1) - .1, c.a, c.b))
         else
             isnothing(sigma) && (sigma = 0.02)
             m = log(abs(w))
             t = isfinite(m) ? exp(-sigma*m^2) : 0.0
-            g = 100.0(m > 0)
-            c = Lab((1 - t)g + t*c.l, t*c.a, t*c.b)
+            g = 1.0(m > 0)
+            c = Oklab((1 - t)g + t*c.l, t*c.a, t*c.b)
         end
     end
     return c
@@ -267,7 +265,7 @@ function domaincolorshader(
     end
 
     # phase color
-    c = convert(Lab, _color_angle(w, color))
+    c = convert(Oklab, _color_angle(w, color))
 
     # add magnitude
     c = _add_magnitude(w, c, abs)
@@ -275,7 +273,7 @@ function domaincolorshader(
     # add integer grid if requested
     if !(grid isa Bool) || grid
         # slightly overattenuate to compensate global darkening
-        g = 1.06_grid(LineGrid, w, grid)
+        g = 1.08_grid(LineGrid, w, grid)
         c = mapc(x -> g*x, c)
     end
 
@@ -367,7 +365,38 @@ function sawplotshader(
         c = Gray(0.6g + 0.3)
         isnothing(box) ? c : _add_box(w, convert(RGB, c), box)
     else
-        c = convert(Lab, _color_angle(w, color))
-        _add_box(w, Lab(c.l + 20g - 10, c.a, c.b), box)
+        c = convert(Oklab, _color_angle(w, color))
+        _add_box(w, Oklab(c.l + .2g - .1, c.a, c.b), box)
     end
 end
+
+# Former color schemes
+
+"""
+    DomainColoring.arenberg_cielab(θ; print = false)
+
+Superseded by the Oklab version: [arenberg](@ref).
+
+Maps a phase angle **`θ`** to a color in CIE L\\*a\\*b\\* space by
+taking
+
+```math
+\\begin{aligned}
+    L^* &= 67 - 12 \\cos(3\\theta), \\\\
+    a^* &= 46 \\cos(\\theta + .4) - 3, \\quad\\text{and} \\\\
+    b^* &= 46 \\sin(\\theta + .4) - 16.
+\\end{aligned}
+```
+
+If `print` is set to true, a desaturated version is used which is more
+easily reproduced on consumer grade printers.
+"""
+function arenberg_cielab(θ; print = false)
+    θ = mod(θ, 2π)
+    c = Lab(67 - 12cos(3θ),
+            46cos(θ + .4) - 3,
+            46sin(θ + .4) + 16)
+    print ? Lab(c.l + 5, .7c.a, .7c.b) : c
+end
+
+@deprecate labsweep(θ) arenberg_cielab(θ)

@@ -1,4 +1,4 @@
-using ColorTypes
+using Colors
 
 # Implements the `limits` expansion typical of the functions in this
 # module, additionally normalizes to tuples.

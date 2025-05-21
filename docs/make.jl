@@ -1,8 +1,6 @@
 using Pkg
 cd(@__DIR__)
 Pkg.activate(".")
-Pkg.develop(path="..")
-Pkg.develop(path="../DomainColoringToy")
 Pkg.instantiate()
 Pkg.precompile()
 

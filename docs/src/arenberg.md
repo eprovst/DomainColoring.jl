@@ -4,13 +4,13 @@ Creating a perceptually smooth color wheel is in general a difficult
 task, and comes with inherent compromises. This document serves to list
 the design decisions taken for the phase wheel, which we call Arenberg,
 used in our implementation of domain coloring. We carefully selected the
-following sweep through CIE L\*a\*b\* space:
+following sweep through Oklab space:
 
 ```math
 \begin{aligned}
-    L^* &= 67 - 12 \cos(3\theta),\\
-    a^* &= 46 \cos(\theta + .4) - 3,\quad\text{and}\\
-    b^* &= 46 \sin(\theta + .4) - 16.
+    L &= .72 - .1 \cos(3\theta), \\
+    a &= .12 \cos(\theta + .4), \quad\text{and} \\
+    b &= .12 \sin(\theta + .4) + .02.
 \end{aligned}
 ```
 
