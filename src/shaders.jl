@@ -174,7 +174,7 @@ function _add_magnitude(
             end
             isfinite(m) && (c = Oklab(c.l + .2mod(m, 1) - .1, c.a, c.b))
         else
-            isnothing(alpha) && (alpha = 2)
+            isnothing(alpha) && (alpha = 1)
             @assert alpha > 0 "alpha must be a positive value."
             m = abs(w)
             r = m^alpha / (m^alpha + 1)
