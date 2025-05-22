@@ -1,4 +1,4 @@
 img {
-  max-width: 40em!important;
+  max-width: min(40em, 100%) !important;
   max-height: 26em;
 }
