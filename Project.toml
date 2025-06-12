@@ -4,8 +4,8 @@ authors = ["Evert Provoost <evert@eprovst.net>"]
 version = "2.0.0"
 
 [deps]
-Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
+Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 
 [weakdeps]
 MakieCore = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
@@ -16,8 +16,8 @@ MakieExt = "MakieCore"
 PlotsExt = "Plots"
 
 [compat]
-Colors = "0.13"
 ColorSchemes = "3"
-MakieCore = "0.8, 0.9"
+Colors = "0.13"
+MakieCore = "0.8, 0.9, 0.10"
 Plots = "1"
 julia = "1.9"
