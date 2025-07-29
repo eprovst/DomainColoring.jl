@@ -10,10 +10,9 @@ both [Plots.jl](https://docs.juliaplots.org) and [Makie](https://makie.org).
 </div>
 ```
 
-In addition to the static plots provided by the main package, interactive
-versions using `GLMakie` are available as part of the [`DomainColoringToy.jl`
-package](@ref "DomainColoringToy"). Even more plots are defined by
-[`ComplexToys.jl`](https://eprovst.github.io/ComplexToys.jl/).
+In addition to the static plots provided here, interactive versions using
+`GLMakie`, and various 3D visualizations, are available as part of the 
+[`ComplexToys.jl` package](https://eprovst.github.io/ComplexToys.jl/).
 
 The plots implemented here are inspired by the wonderful book by Wegert[^1], yet
 using a smooth curve through Oklab space, yielding a more perceptually uniform

@@ -5,7 +5,6 @@ Pkg.instantiate()
 Pkg.precompile()
 
 using Documenter, DomainColoring
-import DomainColoringToy
 
 makedocs(
   sitename = "DomainColoring.jl",
@@ -26,7 +25,6 @@ makedocs(
       "usage/custom.md",
     ],
     "Library" => "lib.md",
-    "DomainColoringToy" => "dct.md",
     "Arenberg Phase Wheel" => "arenberg.md",
   ]
 )

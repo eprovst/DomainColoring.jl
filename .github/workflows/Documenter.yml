@@ -18,11 +18,8 @@ jobs:
       - uses: julia-actions/cache@v1
       - name: Run apt-get update
         run: sudo apt-get update
-      - name: Install GLMakie dependencies
-        run: sudo apt-get install -y cmake xorg-dev mesa-utils xvfb libgl1 freeglut3-dev
       - name: Build and deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-        run: xvfb-run -s '-screen 0 1024x768x24' julia --project=docs/
-               --color=yes docs/make.jl
+        run: julia --project=docs/ --color=yes docs/make.jl
