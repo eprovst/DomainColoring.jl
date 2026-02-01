@@ -1,4 +1,7 @@
-using Colors, ColorSchemes
+# SPDX-License-Identifier: MIT
+
+using ColorSchemes
+using Colors
 
 """
     DomainColoring.arenberg(θ; print = false)
@@ -49,11 +52,9 @@ function _grid(
     )
 
     # carthesian checker plot
-    if rect isa Bool
-        if rect
-            real = true
-            imag = true
-        end
+    if rect isa Bool && rect
+        real = true
+        imag = true
     elseif length(rect) > 1
         real = rect[1]
         imag = rect[2]
@@ -63,11 +64,9 @@ function _grid(
     end
 
     # polar checker plot
-    if polar isa Bool
-        if polar
-            angle = true
-            abs = true
-        end
+    if polar isa Bool && polar
+        angle = true
+        abs = true
     elseif polar isa Function
         angle = true
         abs = polar
@@ -134,19 +133,19 @@ _grid(type, w, arg) = _grid(type, w; rect=arg)
 # Implements the angle coloring logic for shaders.
 _color_angle(w, arg::Bool) = arg ? arenberg(angle(w)) : Oklab(.8, 0.0, 0.0)
 
-_color_angle(w, arg::Function) = arg(mod(angle(w), 2π))
+_color_angle(w, arg::Function) = convert(Oklab, arg(mod(angle(w), 2π)))
 
-_color_angle(w, arg::ColorScheme) = get(arg, mod(angle(w) / 2π, 1))
+_color_angle(w, arg::ColorScheme) = convert(Oklab, get(arg, mod(angle(w) / 2π, 1)))
 
 function _color_angle(w, arg::Symbol)
     if arg == :print
       arenberg(angle(w); print=true)
     elseif arg == :CBC1 || arg == :pd
-      get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
-          mod(-angle(w) / 2π + .5, 1))
+      convert(Oklab, get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
+                         mod(-angle(w) / 2π + .5, 1)))
     elseif arg == :CBTC1 || arg == :t
-      get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
-          mod(-angle(w) / 2π + .5, 1))
+      convert(Oklab, get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
+                         mod(-angle(w) / 2π + .5, 1)))
     else
       _color_angle(w, ColorSchemes.colorschemes[arg])
     end
@@ -158,7 +157,7 @@ end
 # for further argument description.
 function _add_magnitude(
         w,
-        c;
+        c::Oklab;
         base = ℯ,
         transform = nothing,
         alpha = nothing,
@@ -186,13 +185,13 @@ function _add_magnitude(
     return c
 end
 
-_add_magnitude(w, c, args::NamedTuple) = _add_magnitude(w, c; args...)
+_add_magnitude(w, c::Oklab, args::NamedTuple) = _add_magnitude(w, c; args...)
 
-_add_magnitude(w, c, arg::Bool) = arg ? _add_magnitude(w, c) : c
+_add_magnitude(w, c::Oklab, arg::Bool) = arg ? _add_magnitude(w, c) : c
 
-_add_magnitude(w, c, arg::Function) = _add_magnitude(w, c; transform=arg)
+_add_magnitude(w, c::Oklab, arg::Function) = _add_magnitude(w, c; transform=arg)
 
-_add_magnitude(w, c, arg) = _add_magnitude(w, c; base=arg)
+_add_magnitude(w, c::Oklab, arg) = _add_magnitude(w, c; base=arg)
 
 # draw a colored box in a specified area
 function _add_box(w, c, sqs)
@@ -279,7 +278,7 @@ function domaincolorshader(
         c = mapc(x -> g*x, c)
     end
 
-    # add boxs
+    # add boxes
     c = _add_box(w, c, box)
 
     return c

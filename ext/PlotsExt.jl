@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 module PlotsExt
 
 import DomainColoring as DC

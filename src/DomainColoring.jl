@@ -1,14 +1,4 @@
-#==
- = DomainColoring.jl
- =
- = Copyright (c) 2025 Evert Provoost. See LICENSE.
- =
- = Provided functionality is partially inspired by
- =
- =     Wegert, Elias. Visual Complex Functions:
- =       An Introduction with Phase Portraits.
- =       Birkhäuser Basel, 2012.
- =#
+# SPDX-License-Identifier: MIT
 
 module DomainColoring
 
