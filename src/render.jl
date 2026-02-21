@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 using Colors
 
 # Implements the `limits` expansion typical of the functions in this

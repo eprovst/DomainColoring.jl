@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 module MakieExt
 
 import DomainColoring as DC

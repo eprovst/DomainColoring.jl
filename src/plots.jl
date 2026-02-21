@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """
     DomainColoring.@shadedplot(basename, shaderkwargs, shader)
 

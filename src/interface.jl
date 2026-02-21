@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 """
     DomainColoring.shadedplot(
         f :: "Complex -> Complex",
