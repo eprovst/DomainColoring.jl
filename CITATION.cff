@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+title: DomainColoring.jl
+abstract: >-
+  A Julia package to produce phase plots, domain colorings,
+  checker plots, etc. of complex functions using smooth colors.
+authors:
+  - family-names: Provoost
+    given-names: Evert
+    affiliation: KU Leuven
+    orcid: "https://orcid.org/0000-0003-3298-0544"
+version: 2.0.0
+date-released: "2025-07-15"
+identifiers:
+  - description: "This is the collection of archived snapshots of all versions of DomainColoring.jl"
+    type: doi
+    value: 10.5281/zenodo.20055018
+  - description: "This is the archived snapshot of version 2.0.0 of DomainColoring.jl"
+    type: doi
+    value: 10.5281/zenodo.20055024
+license: MIT
+repository-code: "https://github.com/eprovst/DomainColoring.jl"
