@@ -18,5 +18,5 @@ Keyword arguments are passed to the backend.
 """
 shadedplot, shadedplot!
 
-shadedplot(args...) = @error "`shadedplot` is used in an unusual way; did you load a backend?"
-shadedplot!(args...) = @error "`shadedplot!` is used in an unusual way; did you load a backend?"
+shadedplot(args...; kwargs...) = @error "`shadedplot` is used in an unusual way; did you load a backend?"
+shadedplot!(args...; kwargs...) = @error "`shadedplot!` is used in an unusual way; did you load a backend?"
