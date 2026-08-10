@@ -18,7 +18,7 @@ This is implemented by the internal function [`DomainColoring.arenberg`](@ref),
 giving the following phase wheel.
 ```@example
 using DomainColoring, Colors #hide
-showable(::MIME"text/plain", ::AbstractVector{C}) where {C<:Colorant} = false #hide
+showable(::MIME"text/plain", ::AbstractArray{C}) where {C<:Colorant} = false #hide
 DomainColoring.arenberg.(0:.01:2π)
 ```
 
@@ -28,8 +28,30 @@ making certain parts of the phase look longer than others, etc. Unlike
 the HSV map our peaks and troughs are equispaced and of equal height/depth.
 Furthermore, the lightness is smooth everywhere.
 
-Lightnesswise the entire range is separated into six equal parts. For
-data analysis it would be better to minimise the number of oscillations,
+Compare the following two sweeps with a superimposed sinusoidal perturbation
+that grows towards the top (modelled after a similar test in[^1]).
+
+```@example
+using DomainColoring, ImageShow, Colors #hide
+showable(::MIME"text/plain", ::AbstractArray{C}) where {C<:Colorant} = false #hide
+xs = 0:.01:2π; ys = 1:-.01:0
+kovesitest = @. xs' + 0.3sin(80xs') * ys
+
+DomainColoring.arenberg.(kovesitest)
+```
+
+```@example
+using Colors, ImageShow #hide
+showable(::MIME"text/plain", ::AbstractArray{C}) where {C<:Colorant} = false #hide
+xs = 0:.01:2π; ys = 1:-.01:0; kovesitest = @. xs' + 0.3sin(80xs') * ys #hide
+HSV.(rad2deg.(kovesitest), 1, 1)
+```
+
+Whilst the turns in lightness do cause some loss of detail in Arenberg, this
+loss is far more limited than that of the HSV sweep.
+
+As seen above, lightnesswise the entire range is separated into six equal parts.
+For data analysis it would be better to minimise the number of oscillations,
 however, for our purposes the turning points serve as visual anchors dividing
 the phase range. Note that some lightness variation is wanted, as our eyes
 mainly rely on lightness to discern higher frequency information[^1].
