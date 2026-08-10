@@ -19,7 +19,8 @@ end
         out :: Matrix{<: Color},
         f :: "Complex -> Complex",
         shader :: "Complex -> Color",
-        limits = (-1, 1, -1, 1),
+        limits = (-1, 1, -1, 1);
+        aa = false,
     )
 
 # Arguments
@@ -33,19 +34,33 @@ end
 - **`limits`** are the limits of the rectangle to render, in the format
   `(minRe, maxRe, minIm, maxIm)`, if one or two numbers are provided
   instead they are take symmetric along the real and imaginary axis.
+
+# Keyword Arguments
+
+- **`aa`** toggles anti-aliasing. Quadruples computation time, but
+  reduces jaggedness of some edges.
 """
 function renderimage!(
-        img::Matrix{C},
-        f,
-        shader,
-        limits = (-1, 1, -1, 1),
-    ) where C
+    img::Matrix{C},
+    f,
+    shader,
+    limits=(-1, 1, -1, 1);
+    aa=false,
+) where {C}
 
     limits = _expandlimits(limits)
     r = range(limits[1], limits[2], length=size(img, 2))
     i = range(limits[4], limits[3], length=size(img, 1))
+    dr, di = step(r), step(i)
+
     shd(w) = isnan(w) ? zero(C) : convert(C, shader(w))
-    broadcast!((r, i) -> shd(f(r + im*i)), img, r', i)
+    smp(r, i) = shd(f(r + im * i))
+    aasmp(r, i) = weighted_color_mean(
+        (0.25, 0.25, 0.25, 0.25),
+        smp(r + or * dr, i + oi * di)
+            for (or, oi) in ((-0.2, 0.3), (0.3, 0.2), (0.2, -0.3), (-0.3, -0.2))
+    )
+    broadcast!(aa ? aasmp : smp, img, r', i)
 end
 
 """
@@ -53,7 +68,8 @@ end
         f :: "Complex -> Complex",
         shader :: "Complex -> Color",
         limits = (-1, 1, -1, 1),
-        pixels = (720, 720),
+        pixels = (720, 720);
+        aa = false,
     )
 
 # Arguments
@@ -69,16 +85,22 @@ end
 - **`pixels`** is the size of the output in pixels, respectively, the
   number of pixels along the real and imaginary axis, taking the same
   for both if only one number is provided.
+
+# Keyword Arguments
+
+- **`aa`** toggles anti-aliasing. Quadruples computation time, but
+  reduces jaggedness of some edges.
 """
 function renderimage(
-        f,
-        shader,
-        limits = (-1, 1, -1, 1),
-        pixels = (720, 720),
-    )
+    f,
+    shader,
+    limits=(-1, 1, -1, 1),
+    pixels=(720, 720);
+    aa=false,
+)
 
     length(pixels) == 1 && (pixels = (pixels, pixels))
     img = Matrix{RGBA{Float64}}(undef, pixels[1], pixels[2])
-    renderimage!(img, f, shader, limits)
+    renderimage!(img, f, shader, limits; aa)
     return img
 end

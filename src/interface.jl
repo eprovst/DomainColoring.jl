@@ -6,6 +6,7 @@
         shader :: "Complex -> Color",
         limits = (-1, 1, -1, 1),
         pixels = (720, 720);
+        aa = false,
         kwargs...
     )
 

@@ -25,16 +25,17 @@ macro shadedplot(basename, shaderkwargs, shader)
          (modifname, :shadedplot!, (:target,)))
         @eval __module__ begin
             function $fname(
-                    $(target...),
-                    f :: Function,
-                    limits = (-1, 1, -1, 1);
-                    pixels = (720, 720),
-                    $(skwargs...),
-                    kwargs...
-                )
+                $(target...),
+                f::Function,
+                limits=(-1, 1, -1, 1);
+                pixels=(720, 720),
+                aa=false,
+                $(skwargs...),
+                kwargs...
+            )
 
                 DomainColoring.$sname($(target...), f, $shader,
-                                      limits, pixels; kwargs...)
+                                      limits, pixels; aa, kwargs...)
             end
         end
     end
@@ -52,6 +53,7 @@ export domaincolor, domaincolor!
         color = true,
         all = false,
         box = nothing,
+        aa = false,
         kwargs...
     )
 
@@ -101,16 +103,19 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
+- **`aa`** toggles anti-aliasing. Quadruples computation time, but
+  reduces jaggedness of some edges.
+
 Remaining keyword arguments are passed to the plotting backend.
 """
 domaincolor, domaincolor!
 
 @shadedplot(domaincolor,
-    (abs = false,
-     grid = false,
-     color = true,
-     all = false,
-     box = nothing),
+    (abs=false,
+     grid=false,
+     color=true,
+     all=false,
+     box=nothing),
     begin
         # issue warning if everything is inactive
         if Base.all(b -> b isa Bool && !b, (abs, grid, color, all))
@@ -134,6 +139,7 @@ export checkerplot, checkerplot!
         polar = false,
         box = nothing,
         hicontrast = false,
+        aa = false,
         kwargs...
     )
 
@@ -185,19 +191,22 @@ If none of the below options are set, the plot defaults to `rect = true`.
 
 - **`hicontrast`** uses black and white instead of the softer defaults.
 
+- **`aa`** toggles anti-aliasing. Quadruples computation time, but
+  reduces jaggedness of some edges.
+
 Remaining keyword arguments are passed to the plotting backend.
 """
 checkerplot, checkerplot!
 
 @shadedplot(checkerplot,
-    (real = false,
-     imag = false,
-     rect = false,
-     angle = false,
-     abs = false,
-     polar = false,
-     box = nothing,
-     hicontrast = false),
+    (real=false,
+     imag=false,
+     rect=false,
+     angle=false,
+     abs=false,
+     polar=false,
+     box=nothing,
+     hicontrast=false),
     begin
         # set carthesian grid if no options given
         if all(b -> b isa Bool && !b,
@@ -224,6 +233,7 @@ export sawplot, sawplot!
         polar = false,
         color = false,
         box = nothing,
+        aa = false,
         kwargs...
     )
 
@@ -277,19 +287,22 @@ If none of the below options are set, the plot defaults to `rect = true`.
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
+- **`aa`** toggles anti-aliasing. Quadruples computation time, but
+  reduces jaggedness of some edges.
+
 Remaining keyword arguments are passed to the plotting backend.
 """
 sawplot, sawplot!
 
 @shadedplot(sawplot,
-    (real = false,
-     imag = false,
-     rect = false,
-     angle = false,
-     abs = false,
-     polar = false,
-     color = false,
-     box = nothing),
+    (real=false,
+     imag=false,
+     rect=false,
+     angle=false,
+     abs=false,
+     polar=false,
+     color=false,
+     box=nothing),
     begin
         # set carthesian grid if no options given
         if all(b -> b isa Bool && !b,
@@ -315,6 +328,7 @@ export pdphaseplot, pdphaseplot!
         abs = false,
         polar = false,
         box = nothing,
+        aa = false,
         kwargs...
     )
 
@@ -367,18 +381,21 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
+- **`aa`** toggles anti-aliasing. Quadruples computation time, but
+  reduces jaggedness of some edges.
+
 Remaining keyword arguments are passed to the plotting backend.
 """
 pdphaseplot, pdphaseplot!
 
 @shadedplot(pdphaseplot,
-    (real = false,
-     imag = false,
-     rect = false,
-     angle = false,
-     abs = false,
-     polar = false,
-     box = nothing),
+    (real=false,
+     imag=false,
+     rect=false,
+     angle=false,
+     abs=false,
+     polar=false,
+     box=nothing),
     w -> sawplotshader(
         w; real, imag, rect, angle, abs, polar, color=:CBC1, box
     ))
@@ -397,6 +414,7 @@ export tphaseplot, tphaseplot!
         abs = false,
         polar = false,
         box = nothing,
+        aa = false,
         kwargs...
     )
 
@@ -449,18 +467,21 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
+- **`aa`** toggles anti-aliasing. Quadruples computation time, but
+  reduces jaggedness of some edges.
+
 Remaining keyword arguments are passed to the plotting backend.
 """
 tphaseplot, tphaseplot!
 
 @shadedplot(tphaseplot,
-    (real = false,
-     imag = false,
-     rect = false,
-     angle = false,
-     abs = false,
-     polar = false,
-     box = nothing),
+    (real=false,
+     imag=false,
+     rect=false,
+     angle=false,
+     abs=false,
+     polar=false,
+     box=nothing),
     w -> sawplotshader(
         w; real, imag, rect, angle, abs, polar, color=:CBTC1, box
     ))

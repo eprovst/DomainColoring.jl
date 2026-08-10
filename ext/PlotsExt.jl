@@ -21,6 +21,7 @@ for (modifying, target) in
                shader :: Function,
                limits = (-1, 1, -1, 1),
                pixels = (720, 720);
+               aa = false,
                kwargs...
             )
 
@@ -37,7 +38,7 @@ for (modifying, target) in
               end)
 
             Plots.$pname($(target...), r, i,
-                reverse(DC.renderimage(f, shader, limits, pixels),
+                reverse(DC.renderimage(f, shader, limits, pixels; aa),
                         dims=1);
                 attr...)
         end

@@ -21,6 +21,7 @@ for (modifying, target) in
                shader :: Function,
                limits = (-1, 1, -1, 1),
                pixels = (720, 720);
+               aa = false,
                kwargs...
             )
 
@@ -43,7 +44,7 @@ for (modifying, target) in
             r = [limits[1], limits[2]]
             i = [limits[4], limits[3]]
             Makie.$hname($(target...), r, i,
-                      DC.renderimage(f, shader, limits, pixels)';
+                      DC.renderimage(f, shader, limits, pixels; aa)';
                       attr...)
         end
     end
