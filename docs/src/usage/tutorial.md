@@ -131,7 +131,7 @@ options, and the other provided plotting functions.
 
 ```@example
 using CairoMakie, DomainColoring #hide
-domaincolor(z -> im*z^3-1, 2.5, all=true)
+domaincolor(z -> im*z^3-1, 2.5, all=true, aa=true)
 resize!(current_figure(), 620, 600) #hide
 current_figure() #hide
 ```
