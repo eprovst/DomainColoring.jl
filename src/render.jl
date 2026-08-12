@@ -110,7 +110,8 @@ function renderimage(
 )
 
     length(pixels) == 1 && (pixels = (pixels, pixels))
-    img = Matrix{typeof(shader(f(0)))}(undef, pixels[1], pixels[2])
+    coltype = typeof(coloralpha(shader(0.0im)))
+    img = Matrix{coltype}(undef, pixels[1], pixels[2])
     renderimage!(img, f, shader, limits; aa)
     return img
 end
