@@ -66,7 +66,8 @@ function renderimage!(
     i = range(limits[4], limits[3], length=size(img, 1))
     dr, di = step(r), step(i)
 
-    shd(w) = isnan(w) ? zero(C) : convert(C, shader(w))
+    trns = coloralpha(shader(0.0im), 0)
+    shd(w) = isnan(w) ? trns : coloralpha(shader(w))
     ssmp(f, r, i) = shd(f(r + im * i))
     aasmp(f, r, i) = weighted_color_mean(
         (0.25, 0.25, 0.25, 0.25),
