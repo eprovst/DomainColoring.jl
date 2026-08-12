@@ -29,7 +29,7 @@ macro shadedplot(basename, shaderkwargs, shader)
                 f::Function,
                 limits=(-1, 1, -1, 1);
                 pixels=(720, 720),
-                aa=false,
+                aa=true,
                 $(skwargs...),
                 kwargs...
             )
@@ -53,7 +53,7 @@ export domaincolor, domaincolor!
         color = true,
         all = false,
         box = nothing,
-        aa = false,
+        aa = true,
         kwargs...
     )
 
@@ -139,7 +139,7 @@ export checkerplot, checkerplot!
         polar = false,
         box = nothing,
         hicontrast = false,
-        aa = false,
+        aa = true,
         kwargs...
     )
 
@@ -233,7 +233,7 @@ export sawplot, sawplot!
         polar = false,
         color = false,
         box = nothing,
-        aa = false,
+        aa = true,
         kwargs...
     )
 
@@ -328,7 +328,7 @@ export pdphaseplot, pdphaseplot!
         abs = false,
         polar = false,
         box = nothing,
-        aa = false,
+        aa = true,
         kwargs...
     )
 
@@ -414,7 +414,7 @@ export tphaseplot, tphaseplot!
         abs = false,
         polar = false,
         box = nothing,
-        aa = false,
+        aa = true,
         kwargs...
     )
 

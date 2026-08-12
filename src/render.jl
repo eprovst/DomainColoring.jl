@@ -20,7 +20,7 @@ end
         f :: "Complex -> Complex",
         shader :: "Complex -> Color",
         limits = (-1, 1, -1, 1);
-        aa = false,
+        aa = true,
     )
 
 # Arguments
@@ -45,7 +45,7 @@ function renderimage!(
     f,
     shader,
     limits=(-1, 1, -1, 1);
-    aa=false,
+    aa=true,
 ) where {C}
 
     limits = _expandlimits(limits)
@@ -69,7 +69,7 @@ end
         shader :: "Complex -> Color",
         limits = (-1, 1, -1, 1),
         pixels = (720, 720);
-        aa = false,
+        aa = true,
     )
 
 # Arguments
@@ -96,7 +96,7 @@ function renderimage(
     shader,
     limits=(-1, 1, -1, 1),
     pixels=(720, 720);
-    aa=false,
+    aa=true,
 )
 
     length(pixels) == 1 && (pixels = (pixels, pixels))

@@ -21,7 +21,7 @@ for (modifying, target) in
                shader :: Function,
                limits = (-1, 1, -1, 1),
                pixels = (720, 720);
-               aa = false,
+               aa = true,
                kwargs...
             )
 

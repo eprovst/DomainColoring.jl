@@ -166,18 +166,17 @@ resize!(current_figure(), 620, 280) #hide
 current_figure() # hide
 ```
 
-For these types of plots, with sharp edges or fine lines, it is sometimes
-wothwhile to enable anti-aliassing through the `aa=true` option (available
-for all plots). In this mode, the coloring function is evaluated at four
-slightly perturbed points for every pixel (compared to only the center in
-the default mode). This resolves more detail and reduces artefacts near
-edges, but significantly increases computation time (which is why it is
-turned off by default). Compare the following version to the one above.
-We will use this option again for a couple of later examples, try turning
-it off to see the difference it makes.
+To better render these types of plots, with sharp edges or fine lines, all
+plotting commands use anti-aliassing by default. In this mode, the coloring
+function is evaluated at four slightly perturbed points for every pixel. This
+resolves more detail and reduces artefacts near edges, but significantly
+increases computation time. If you do not need or want anti-aliasing (for
+instance for figures with smoothly varying colors, like a phase only plot) you
+can turn this off using the `aa=false` option. Compare the following version to
+the one above (here anti-aliassing is clearly preferred).
 ```@example
 using CairoMakie, DomainColoring # hide
-checkerplot(sin, (5, 2), polar=1.5, aa=true)
+checkerplot(sin, (5, 2), polar=1.5, aa=false)
 resize!(current_figure(), 620, 280) #hide
 current_figure() #hide
 ```
@@ -208,7 +207,7 @@ For `grid` these options are identical to `checkerplot`, for example an
 analogous example to the penultimate one of last section, is given by:
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(sin, (5, 2), grid=(; polar=1.5), aa=true)
+domaincolor(sin, (5, 2), grid=(; polar=1.5))
 resize!(current_figure(), 620, 280) #hide
 current_figure() # hide
 ```
@@ -219,7 +218,7 @@ The `abs` argument accepts a different basis from the default ``e``, if
 we for instance wanted to see orders of magnitude, we could look at:
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(z -> z^3, 5, abs=10, aa=true)
+domaincolor(z -> z^3, 5, abs=10)
 resize!(current_figure(), 620, 600) #hide
 current_figure() # hide
 ```
@@ -229,7 +228,7 @@ magnitude itself, they can use the `transform` option, or pass a
 function directly to `abs`, for instance:
 ```@example
 using CairoMakie, DomainColoring # hide
-domaincolor(sqrt, (-1, 19, -4, 4), abs=z->z, aa=true)
+domaincolor(sqrt, (-1, 19, -4, 4), abs=z->z)
 resize!(current_figure(), 620, 280) #hide
 current_figure() # hide
 ```
@@ -261,7 +260,7 @@ can add a discretization effect:
 ```@example
 using CairoMakie, DomainColoring # hide
 discrangle(θ) = DomainColoring.arenberg(π/10 * floor(10/π * θ))
-domaincolor(tan, π/2, color=discrangle, aa=true)
+domaincolor(tan, π/2, color=discrangle)
 resize!(current_figure(), 620, 600) #hide
 current_figure() # hide
 ```
@@ -342,7 +341,7 @@ function riemann(f; kwargs...) # hide
     domaincolor!(ax12, z -> abs(z) <= 1 ? f(1/z) : NaN; kwargs...) # hide
     fig # hide
 end # hide
-riemann(sin, abs=true, aa=true)
+riemann(sin, abs=true)
 resize!(current_figure(), 620, 300) #hide
 current_figure() #hide
 ```
