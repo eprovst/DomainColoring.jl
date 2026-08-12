@@ -54,13 +54,23 @@ function renderimage!(
     dr, di = step(r), step(i)
 
     shd(w) = isnan(w) ? zero(C) : convert(C, shader(w))
-    smp(r, i) = shd(f(r + im * i))
+    ssmp(r, i) = shd(f(r + im * i))
     aasmp(r, i) = weighted_color_mean(
         (0.25, 0.25, 0.25, 0.25),
-        smp(r + or * dr, i + oi * di)
+        ssmp(r + or * dr, i + oi * di)
             for (or, oi) in ((-0.2, 0.3), (0.3, 0.2), (0.2, -0.3), (-0.3, -0.2))
     )
-    broadcast!(aa ? aasmp : smp, img, r', i)
+    smp = aa ? aasmp : ssmp
+    if Threads.nthreads() == 1
+        broadcast!(smp, img, r', i)
+    else
+        Threads.@threads :static for x in axes(img, 2)
+            rx = r[x]
+            for y in axes(img, 1)
+                @inbounds img[y, x] = smp(rx, i[y])
+            end
+        end
+    end
 end
 
 """
@@ -100,7 +110,7 @@ function renderimage(
 )
 
     length(pixels) == 1 && (pixels = (pixels, pixels))
-    img = Matrix{RGBA{Float64}}(undef, pixels[1], pixels[2])
+    img = Matrix{typeof(shader(f(0)))}(undef, pixels[1], pixels[2])
     renderimage!(img, f, shader, limits; aa)
     return img
 end
