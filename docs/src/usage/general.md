@@ -295,7 +295,7 @@ and
 ```@example
 using CairoMakie, DomainColoring # hide
 f = sin #hide
-domaincolor(z -> abs(z) <= 1 ? f(1/z) : NaN)
+domaincolor(z -> abs(z) <= 1 && z != 0 ? f(1/z) : NaN)
 resize!(current_figure(), 620, 600) #hide
 current_figure() #hide
 ```
@@ -325,7 +325,7 @@ function riemann(f; kwargs...)
     ax11 = Axis(fig[1,1], aspect=1)
     domaincolor!(ax11, z -> abs(z) <= 1 ? f(z) : NaN; kwargs...)
     ax12 = Axis(fig[1,2], aspect=1)
-    domaincolor!(ax12, z -> abs(z) <= 1 ? f(1/z) : NaN; kwargs...)
+    domaincolor!(ax12, z -> abs(z) <= 1 && z != 0 ? f(1/z) : NaN; kwargs...)
     fig
 end
 ```
@@ -338,7 +338,7 @@ function riemann(f; kwargs...) # hide
     ax11 = Axis(fig[1,1], aspect=1) # hide
     domaincolor!(ax11, z -> abs(z) <= 1 ? f(z) : NaN; kwargs...) # hide
     ax12 = Axis(fig[1,2], aspect=1) # hide
-    domaincolor!(ax12, z -> abs(z) <= 1 ? f(1/z) : NaN; kwargs...) # hide
+    domaincolor!(ax12, z -> abs(z) <= 1 && z != 0 ? f(1/z) : NaN; kwargs...) # hide
     fig # hide
 end # hide
 riemann(sin, abs=true)
