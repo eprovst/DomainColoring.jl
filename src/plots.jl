@@ -3,9 +3,10 @@
 """
     DomainColoring.@shadedplot(basename, shaderkwargs, shader)
 
-Macro emitting implementations of **`basename`** and **`basename!`** in
-a similar fashion to the other plotting routines in this library, see
-for instance [`domaincolor`](@ref) and [`domaincolor!`](@ref).
+Macro emitting implementations of **`basename`**, **`basename!`**, and
+**`basenameimg`** in a similar fashion to the other plotting routines in this
+library, see for instance [`domaincolor`](@ref), [`domaincolor!`](@ref), and
+[`domaincolorimg`](@ref).
 
 **`shaderkwargs`** is a named tuple setting keyword arguments used in
 the expression **`shader`**. The result of **`shader`** should be a
@@ -15,6 +16,7 @@ See the source for examples.
 """
 macro shadedplot(basename, shaderkwargs, shader)
     modifname = Symbol(basename, '!')
+    imgname = Symbol(basename, "img")
     # interpret sargs as keyword arguments
     skwargs = [Expr(:kw, p...) for
                p in pairs(__module__.eval(shaderkwargs))]
@@ -22,7 +24,8 @@ macro shadedplot(basename, shaderkwargs, shader)
     for (fname, sname, target) in
         ((basename,  :shadedplot,  ()),
          (modifname, :shadedplot!, ()),
-         (modifname, :shadedplot!, (:target,)))
+         (modifname, :shadedplot!, (:target,)),
+         (imgname, :renderimage, ()))
         @eval __module__ begin
             function $fname(
                 $(target...),
@@ -41,7 +44,7 @@ macro shadedplot(basename, shaderkwargs, shader)
     end
 end
 
-export domaincolor, domaincolor!
+export domaincolor, domaincolor!, domaincolorimg
 
 """
     domaincolor(
@@ -108,7 +111,7 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-domaincolor, domaincolor!
+domaincolor, domaincolor!, domaincolorimg
 
 @shadedplot(domaincolor,
     (abs=false,
@@ -124,7 +127,7 @@ domaincolor, domaincolor!
         w -> domaincolorshader(w; abs, grid, color, all, box)
     end)
 
-export checkerplot, checkerplot!
+export checkerplot, checkerplot!, checkerplotimg
 
 """
     checkerplot(
@@ -196,7 +199,7 @@ If none of the below options are set, the plot defaults to `rect = true`.
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-checkerplot, checkerplot!
+checkerplot, checkerplot!, checkerplotimg
 
 @shadedplot(checkerplot,
     (real=false,
@@ -218,7 +221,7 @@ checkerplot, checkerplot!
         )
     end)
 
-export sawplot, sawplot!
+export sawplot, sawplot!, sawplotimg
 
 """
     sawplot(
@@ -292,7 +295,7 @@ If none of the below options are set, the plot defaults to `rect = true`.
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-sawplot, sawplot!
+sawplot, sawplot!, sawplotimg
 
 @shadedplot(sawplot,
     (real=false,
@@ -314,7 +317,7 @@ sawplot, sawplot!
         )
     end)
 
-export pdphaseplot, pdphaseplot!
+export pdphaseplot, pdphaseplot!, pdphaseplotimg
 
 """
     pdphaseplot(
@@ -386,7 +389,7 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-pdphaseplot, pdphaseplot!
+pdphaseplot, pdphaseplot!, pdphaseplotimg
 
 @shadedplot(pdphaseplot,
     (real=false,
@@ -400,7 +403,7 @@ pdphaseplot, pdphaseplot!
         w; real, imag, rect, angle, abs, polar, color=:CBC1, box
     ))
 
-export tphaseplot, tphaseplot!
+export tphaseplot, tphaseplot!, tphaseplotimg
 
 """
     tphaseplot(
@@ -472,7 +475,7 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
 
 Remaining keyword arguments are passed to the plotting backend.
 """
-tphaseplot, tphaseplot!
+tphaseplot, tphaseplot!, tphaseplotimg
 
 @shadedplot(tphaseplot,
     (real=false,
