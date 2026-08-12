@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MIT
 
 using Colors
+using FunctionWrappers
+
+const ComplexFunction{T} = FunctionWrappers.FunctionWrapper{Complex{T}, Tuple{Complex{T}}}
 
 # Implements the `limits` expansion typical of the functions in this
 # module, additionally normalizes to tuples.
@@ -47,6 +50,16 @@ function renderimage!(
     limits=(-1, 1, -1, 1);
     aa=true,
 ) where {C}
+    renderimage!(img, ComplexFunction{typeof(real(f(0.0)))}(f), shader, limits; aa)
+end
+
+function renderimage!(
+    img::Matrix{C},
+    f::ComplexFunction,
+    shader,
+    limits=(-1, 1, -1, 1);
+    aa=true,
+) where {C}
 
     limits = _expandlimits(limits)
     r = range(limits[1], limits[2], length=size(img, 2))
@@ -54,20 +67,20 @@ function renderimage!(
     dr, di = step(r), step(i)
 
     shd(w) = isnan(w) ? zero(C) : convert(C, shader(w))
-    ssmp(r, i) = shd(f(r + im * i))
-    aasmp(r, i) = weighted_color_mean(
+    ssmp(f, r, i) = shd(f(r + im * i))
+    aasmp(f, r, i) = weighted_color_mean(
         (0.25, 0.25, 0.25, 0.25),
-        ssmp(r + or * dr, i + oi * di)
+        ssmp(f, r + or * dr, i + oi * di)
             for (or, oi) in ((-0.2, 0.3), (0.3, 0.2), (0.2, -0.3), (-0.3, -0.2))
     )
     smp = aa ? aasmp : ssmp
     if Threads.nthreads() == 1
-        broadcast!(smp, img, r', i)
+        broadcast!(smp, img, Ref(f), r', i)
     else
         Threads.@threads :static for x in axes(img, 2)
             rx = r[x]
             for y in axes(img, 1)
-                @inbounds img[y, x] = smp(rx, i[y])
+                @inbounds img[y, x] = smp(f, rx, i[y])
             end
         end
     end
