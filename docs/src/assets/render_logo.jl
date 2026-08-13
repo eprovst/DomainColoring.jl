@@ -1,8 +1,4 @@
 using Images
-import DomainColoring as DC
+using DomainColoring
 
-
-fig = DC.renderimage(z -> im*(z+.1im)^3-1,
-                     w -> DC.domaincolorshader(w; all=true), 2.5; aa = true)
-
-save("logo.png", fig)
+save("logo.png", domaincolorimg(z -> im*(z+.1im)^3-1, 2.5; all=true))
