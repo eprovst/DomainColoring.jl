@@ -83,10 +83,10 @@ function _grid(
     end
 
     # set defaults
-    (real  isa Bool && real)  && (real = 1)
-    (imag  isa Bool && imag)  && (imag = 1)
-    (angle isa Bool && angle) && (angle = 8)
-    (abs   isa Bool && abs)   && (abs = ℯ)
+    (real ≡ true) && (real = 1)
+    (imag ≡ true) && (imag = 1)
+    (angle ≡ true) && (angle = 8)
+    (abs ≡ true) && (abs = ℯ)
 
     # set the transform
     saw(x) = mod(x, 1)
@@ -135,23 +135,21 @@ _grid(type, w, args::NamedTuple) = _grid(type, w; args...)
 _grid(type, w, arg) = _grid(type, w; rect=arg)
 
 # Implements the angle coloring logic for shaders.
-_color_angle(w, arg::Bool) = arg ? arenberg(angle(w)) : Oklab(.8, 0.0, 0.0)
+_color_angle(w, arg::Bool)::Oklab{Float64} = arg ? arenberg(angle(w)) : Gray(.8)
 
-_color_angle(w, arg::Function) = convert(Oklab, arg(mod(angle(w), 2π)))
+_color_angle(w, arg::Function)::Oklab{Float64} = arg(mod(angle(w), 2π))
 
-_color_angle(w, arg::ColorScheme) = convert(Oklab, get(arg, mod(angle(w) / 2π, 1)))
+_color_angle(w, arg::ColorScheme)::Oklab{Float64} = get(arg, mod(angle(w) / 2π, 1))
 
-function _color_angle(w, arg::Symbol)
+function _color_angle(w, arg::Symbol)::Oklab{Float64}
     if arg == :print
       arenberg(angle(w); print=true)
     elseif arg == :CBC1 || arg == :pd
-      convert(Oklab, get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256,
-                         mod(-angle(w) / 2π + .5, 1)))
+      get(ColorSchemes.cyclic_protanopic_deuteranopic_bwyk_16_96_c31_n256, mod(-angle(w) / 2π + .5, 1))
     elseif arg == :CBTC1 || arg == :t
-      convert(Oklab, get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256,
-                         mod(-angle(w) / 2π + .5, 1)))
+      get(ColorSchemes.cyclic_tritanopic_cwrk_40_100_c20_n256, mod(-angle(w) / 2π + .5, 1))
     else
-      _color_angle(w, ColorSchemes.colorschemes[arg])
+      get(ColorSchemes.colorschemes[arg], mod(angle(w) / 2π, 1))
     end
 end
 
@@ -265,12 +263,12 @@ function domaincolorshader(
     end
 
     # short circuit conversions
-    if (abs isa Bool) && !abs && (grid isa Bool) && !grid
+    if abs ≡ false && grid ≡ false
         return _add_box(w, _color_angle(w, color), box)
     end
 
     # phase color
-    c = convert(Oklab, _color_angle(w, color))
+    c = _color_angle(w, color)
 
     # add magnitude
     c = _add_magnitude(w, c, abs)
@@ -317,6 +315,11 @@ function checkerplotshader(
         hicontrast = false,
     )
 
+    # set carthesian grid if no options given
+    if all(b -> b ≡ false, (real, imag, rect, angle, abs, polar))
+        rect = true
+    end
+
     g = _grid(CheckerGrid, w; real, imag, rect, angle, abs, polar)
 
     if hicontrast
@@ -327,6 +330,51 @@ function checkerplotshader(
 
     # add boxs
     isnothing(box) ? c : _add_box(w, convert(RGB, c), box)
+end
+
+"""
+    DomainColoring.sawplotshader(
+        w :: Complex;
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        color = false,
+        box = nothing,
+    )
+
+Takes a complex value **`w`** and shades it with the option to turn into a sawplot.
+
+For documentation of the remaining arguments see [`sawplot`](@ref).
+"""
+function sawplotbaseshader(
+        w;
+        real = false,
+        imag = false,
+        rect = false,
+        angle = false,
+        abs = false,
+        polar = false,
+        color = false,
+        box = nothing,
+    )
+
+    # shortcut if there is no grid to add
+    if all(b -> b ≡ false, (real, imag, rect, angle, abs, polar))
+        return _add_box(w, _color_angle(w, color), box)
+    end
+
+    g = _grid(SawGrid, w; real, imag, rect, angle, abs, polar)
+
+    if color ≡ false
+        c = Gray(0.6g + 0.3)
+        isnothing(box) ? c : _add_box(w, convert(RGB, c), box)
+    else
+        c = _color_angle(w, color)
+        _add_box(w, Oklab(c.l + .2g - .1, c.a, c.b), box)
+    end
 end
 
 """
@@ -358,21 +406,14 @@ function sawplotshader(
         box = nothing,
     )
 
-    # shortcut if there is no grid to add
-    if all(b -> (b isa Bool) && !b,
-           (real, imag, rect, angle, abs, polar))
-        return _add_box(w, _color_angle(w, color), box)
+    # set carthesian grid if no options given
+    if all(b -> b ≡ false, (real, imag, rect, angle, abs, polar))
+        rect = true
     end
 
-    g = _grid(SawGrid, w; real, imag, rect, angle, abs, polar)
-
-    if color isa Bool && !color
-        c = Gray(0.6g + 0.3)
-        isnothing(box) ? c : _add_box(w, convert(RGB, c), box)
-    else
-        c = convert(Oklab, _color_angle(w, color))
-        _add_box(w, Oklab(c.l + .2g - .1, c.a, c.b), box)
-    end
+    sawplotbaseshader(
+        w; real, imag, rect, angle, abs, polar, color, box
+    )
 end
 
 # Former color schemes

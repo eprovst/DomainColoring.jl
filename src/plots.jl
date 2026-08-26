@@ -121,7 +121,7 @@ domaincolor, domaincolor!, domaincolorimg
      box=nothing),
     begin
         # issue warning if everything is inactive
-        if Base.all(b -> b isa Bool && !b, (abs, grid, color, all))
+        if Base.all(b -> b ≡ false, (abs, grid, color, all))
             @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
         end
         w -> domaincolorshader(w; abs, grid, color, all, box)
@@ -210,16 +210,9 @@ checkerplot, checkerplot!, checkerplotimg
      polar=false,
      box=nothing,
      hicontrast=false),
-    begin
-        # set carthesian grid if no options given
-        if all(b -> b isa Bool && !b,
-               (real, imag, rect, angle, abs, polar))
-            rect = true
-        end
-        w -> checkerplotshader(
-            w; real, imag, rect, angle, abs, polar, box, hicontrast
-        )
-    end)
+    w -> checkerplotshader(
+        w; real, imag, rect, angle, abs, polar, box, hicontrast
+    ))
 
 export sawplot, sawplot!, sawplotimg
 
@@ -306,16 +299,9 @@ sawplot, sawplot!, sawplotimg
      polar=false,
      color=false,
      box=nothing),
-    begin
-        # set carthesian grid if no options given
-        if all(b -> b isa Bool && !b,
-               (real, imag, rect, angle, abs, polar))
-            rect = true
-        end
-        w -> sawplotshader(
-            w; real, imag, rect, angle, abs, polar, color, box
-        )
-    end)
+    w -> sawplotshader(
+        w; real, imag, rect, angle, abs, polar, color, box
+    ))
 
 export pdphaseplot, pdphaseplot!, pdphaseplotimg
 
@@ -399,7 +385,7 @@ pdphaseplot, pdphaseplot!, pdphaseplotimg
      abs=false,
      polar=false,
      box=nothing),
-    w -> sawplotshader(
+    w -> sawplotbaseshader(
         w; real, imag, rect, angle, abs, polar, color=:CBC1, box
     ))
 
@@ -485,6 +471,6 @@ tphaseplot, tphaseplot!, tphaseplotimg
      abs=false,
      polar=false,
      box=nothing),
-    w -> sawplotshader(
+    w -> sawplotbaseshader(
         w; real, imag, rect, angle, abs, polar, color=:CBTC1, box
     ))
