@@ -60,31 +60,34 @@ function renderimage!(
     limits=(-1, 1, -1, 1);
     aa=true,
 ) where {C}
-
     limits = _expandlimits(limits)
     r = range(limits[1], limits[2], length=size(img, 2))
     i = range(limits[4], limits[3], length=size(img, 1))
     dr, di = step(r), step(i)
+    trns = coloralpha(zero(shader(0.0im)), 0)
 
-    trns = coloralpha(shader(0.0im), 0)
-    shd(w) = isnan(w) ? trns : coloralpha(shader(w))
-    ssmp(f, r, i) = shd(f(r + im * i))
-    aasmp(f, r, i) = weighted_color_mean(
-        (0.25, 0.25, 0.25, 0.25),
-        ssmp(f, r + or * dr, i + oi * di)
-            for (or, oi) in ((-0.2, 0.3), (0.3, 0.2), (0.2, -0.3), (-0.3, -0.2))
-    )
-    smp = aa ? aasmp : ssmp
-    if Threads.nthreads() == 1
-        broadcast!(smp, img, Ref(f), r', i)
-    else
-        Threads.@threads :static for x in axes(img, 2)
-            rx = r[x]
-            for y in axes(img, 1)
-                @inbounds img[y, x] = smp(f, rx, i[y])
+    shd(w, trns) = isnan(w) ? trns : coloralpha(shader(w))
+    ssmp(f, r, i, _, _, trns) = shd(f(r + im * i), trns)
+    function aasmp(f, r, i, dr, di, trns)
+        s = trns
+        for (or, oi) in ((-0.2, 0.3), (0.3, 0.2), (0.2, -0.3), (-0.3, -0.2))
+            s = mapc(+, s, ssmp(f, r + or * dr, i + oi * di, (), (), trns))
+        end
+        mapc(c->.25c, s)
+    end
+    function fillimg!(img, f, smp, r, i, dr, di, trns)
+        if Threads.nthreads() == 1
+            broadcast!(smp, img, Ref(f), r', i, dr, di, trns)
+        else
+            Threads.@threads :static for x in axes(img, 2)
+                rx = r[x]
+                for y in axes(img, 1)
+                    @inbounds img[y, x] = smp(f, rx, i[y], dr, di, trns)
+                end
             end
         end
     end
+    fillimg!(img, f, aa ? aasmp : ssmp, r, i, dr, di, trns)
 end
 
 """
