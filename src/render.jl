@@ -68,13 +68,11 @@ function renderimage!(
 
     shd(w, trns) = isnan(w) ? trns : coloralpha(shader(w))
     ssmp(f, r, i, _, _, trns) = shd(f(r + im * i), trns)
-    function aasmp(f, r, i, dr, di, trns)
-        s = trns
-        for (or, oi) in ((-0.2, 0.3), (0.3, 0.2), (0.2, -0.3), (-0.3, -0.2))
-            s = mapc(+, s, ssmp(f, r + or * dr, i + oi * di, (), (), trns))
-        end
-        mapc(c->.25c, s)
-    end
+    aasmp(f, r, i, dr, di, trns) = weighted_color_mean(
+        (0.25, 0.25, 0.25, 0.25),
+        ssmp(f, r + or * dr, i + oi * di, (), (), trns)
+            for (or, oi) in ((-0.2, 0.3), (0.3, 0.2), (0.2, -0.3), (-0.3, -0.2))
+    )
     function fillimg!(img, f, smp, r, i, dr, di, trns)
         if Threads.nthreads() == 1
             broadcast!(smp, img, Ref(f), r', i, dr, di, trns)
