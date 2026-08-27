@@ -210,9 +210,10 @@ checkerplot, checkerplot!, checkerplotimg
      polar=false,
      box=nothing,
      hicontrast=false),
-    w -> checkerplotshader(
-        w; real, imag, rect, angle, abs, polar, box, hicontrast
-    ))
+    # set carthesian grid if no options given
+    let rect = all(b -> b ≡ false, (real, imag, rect, angle, abs, polar)) ? true : rect
+        w -> checkerplotshader(w; real, imag, rect, angle, abs, polar, box, hicontrast)
+    end)
 
 export sawplot, sawplot!, sawplotimg
 
@@ -299,9 +300,10 @@ sawplot, sawplot!, sawplotimg
      polar=false,
      color=false,
      box=nothing),
-    w -> sawplotshader(
-        w; real, imag, rect, angle, abs, polar, color, box
-    ))
+    # set carthesian grid if no options given
+    let rect = all(b -> b ≡ false, (real, imag, rect, angle, abs, polar)) ? true : rect
+        w -> sawplotshader(w; real, imag, rect, angle, abs, polar, color, box)
+    end)
 
 export pdphaseplot, pdphaseplot!, pdphaseplotimg
 
@@ -385,8 +387,8 @@ pdphaseplot, pdphaseplot!, pdphaseplotimg
      abs=false,
      polar=false,
      box=nothing),
-    w -> sawplotbaseshader(
-        w; real, imag, rect, angle, abs, polar, color=:CBC1, box
+    w -> sawplotshader(
+        w; real, imag, rect, angle, abs, polar, color=CBC1, box
     ))
 
 export tphaseplot, tphaseplot!, tphaseplotimg
@@ -471,6 +473,6 @@ tphaseplot, tphaseplot!, tphaseplotimg
      abs=false,
      polar=false,
      box=nothing),
-    w -> sawplotbaseshader(
-        w; real, imag, rect, angle, abs, polar, color=:CBTC1, box
+    w -> sawplotshader(
+        w; real, imag, rect, angle, abs, polar, color=CBTC1, box
     ))

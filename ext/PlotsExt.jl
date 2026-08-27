@@ -18,7 +18,7 @@ for (modifying, target) in
         function DC.$fname(
                $(target...),
                f :: Function,
-               shader :: Function,
+               shader,
                limits = (-1, 1, -1, 1),
                pixels = (720, 720);
                aa = true,
