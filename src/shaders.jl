@@ -137,6 +137,8 @@ _grid(type, w, arg) = _grid(type, w; rect=arg)
 # Implements the angle coloring logic for shaders.
 _color_angle(w, arg::Bool)::Oklab{Float64} = arg ? arenberg(angle(w)) : Oklab(.8, 0, 0)
 
+_color_angle(w, ::Val{:print})::Oklab{Float64} = arenberg(angle(w); print=true)
+
 function _color_angle(w, arg::Function)::Oklab{Float64}
     θ = angle(w)
     arg(ifelse(θ < 0, θ + 2π, θ))
@@ -161,13 +163,28 @@ const CBTC1 = ColorScheme(convert.(
 
 function _color_angle(w, arg::Symbol)::Oklab{Float64}
     if arg == :print
-      arenberg(angle(w); print=true)
+      _color_angle(w, Val{:print})
     elseif arg == :CBC1 || arg == :pd
       _color_angle(w, CBC1)
     elseif arg == :CBTC1 || arg == :t
       _color_angle(w, CBTC1)
     else
       _color_angle(w, ColorSchemes.colorschemes[arg])
+    end
+end
+
+# utility to optimize the passed argument before a hot loop
+_preprocess_color(arg) = arg
+
+function _preprocess_color(arg::Symbol)
+    if arg == :print
+      Val(:print)
+    elseif arg == :CBC1 || arg == :pd
+      CBC1
+    elseif arg == :CBTC1 || arg == :t
+      CBTC1
+    else
+      ColorScheme(convert.(Oklab{Float64}, ColorSchemes.colorschemes[arg]))
     end
 end
 
@@ -226,29 +243,38 @@ function _add_box(w, c, sqs)
 end
 
 # domain function
-function _add_box(w, c::C, sq::Tuple{<:Function, <:Color}) where C <: Color
-    f, s = sq
+function _add_box(w, c::C, (f, s)::Tuple{<:Function, <:Color}) where C <: Color
     f(w) ? convert(C, s) : c
 end
 
-function _add_box(w, c::C, sq::Tuple{<:Function, <:Any}) where C <: Color
-    f, s = sq
+function _add_box(w, c::C, (f, s)::Tuple{<:Function, <:Any}) where C <: Color
     _add_box(w, c, (f, parse(C, s)))
 end
 
 # normal box
-function _add_box(w, c::C, sq::Tuple{<:Number, <:Number, <:Color}) where C <: Color
-    a, b, s = sq
+function _add_box(w, c::C, (a, b, s)::Tuple{<:Number, <:Number, <:Color}) where C <: Color
     mr, Mr = minmax(real(a), real(b))
     mi, Mi = minmax(imag(a), imag(b))
     r, i = reim(w)
     (mr <= r <= Mr) && (mi <= i <= Mi) ? convert(C, s) : c
 end
 
-function _add_box(w, c::C, sq::Tuple{<:Number, <:Number, <:Any}) where C <: Color
-    a, b, s = sq
+function _add_box(w, c::C, (a, b, s)::Tuple{<:Number, <:Number, <:Any}) where C <: Color
     _add_box(w, c, (a, b, parse(C, s)))
 end
+
+# utility to optimize the passed argument before a hot loop
+function _preprocess_box(sqs)
+    if isnothing(sqs)
+        nothing
+    else
+        map(_preprocess_box, sqs)
+    end
+end
+_preprocess_box((f, s)::Tuple{<:Function, <:Color}) = (f, convert(Oklab{Float64}, s))
+_preprocess_box((f, s)::Tuple{<:Function, <:Any}) = (f, parse(Oklab{Float64}, s))
+_preprocess_box((a, b, s)::Tuple{<:Number, <:Number, <:Color}) = (a, b, convert(Oklab{Float64}, s))
+_preprocess_box((a, b, s)::Tuple{<:Number, <:Number, <:Any}) = (a, b, parse(Oklab{Float64}, s))
 
 """
     DomainColoring.domaincolorshader(

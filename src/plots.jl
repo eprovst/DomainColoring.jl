@@ -128,7 +128,10 @@ domaincolor, domaincolor!, domaincolorimg
         if Base.all(b -> b ≡ false, (abs, grid, color, all))
             @warn "angle, abs, and grid are all false, domain coloring will be a constant color."
         end
-        w -> domaincolorshader(w; abs, grid, color, all, box)
+        let color = _preprocess_color(color),
+            box = _preprocess_box(box)
+            w -> domaincolorshader(w; abs, grid, color, all, box)
+        end
     end)
 
 export checkerplot, checkerplot!, checkerplotimg
@@ -219,7 +222,8 @@ checkerplot, checkerplot!, checkerplotimg
      box=nothing,
      hicontrast=false),
     # set carthesian grid if no options given
-    let rect = all(b -> b ≡ false, (real, imag, rect, angle, abs, polar)) ? true : rect
+    let rect = all(b -> b ≡ false, (real, imag, rect, angle, abs, polar)) ? true : rect,
+        box = _preprocess_box(box)
         w -> checkerplotshader(w; real, imag, rect, angle, abs, polar, box, hicontrast)
     end)
 
@@ -313,7 +317,9 @@ sawplot, sawplot!, sawplotimg
      color=false,
      box=nothing),
     # set carthesian grid if no options given
-    let rect = all(b -> b ≡ false, (real, imag, rect, angle, abs, polar)) ? true : rect
+    let rect = all(b -> b ≡ false, (real, imag, rect, angle, abs, polar)) ? true : rect,
+        color = _preprocess_color(color),
+        box = _preprocess_box(box)
         w -> sawplotshader(w; real, imag, rect, angle, abs, polar, color, box)
     end)
 
@@ -403,9 +409,11 @@ pdphaseplot, pdphaseplot!, pdphaseplotimg
      abs=false,
      polar=false,
      box=nothing),
-    w -> sawplotshader(
+    let box = _preprocess_box(box)
+      w -> sawplotshader(
         w; real, imag, rect, angle, abs, polar, color=CBC1, box
-    ))
+      )
+    end)
 
 export tphaseplot, tphaseplot!, tphaseplotimg
 
@@ -493,6 +501,8 @@ tphaseplot, tphaseplot!, tphaseplotimg
      abs=false,
      polar=false,
      box=nothing),
-    w -> sawplotshader(
+    let box = _preprocess_box(box)
+      w -> sawplotshader(
         w; real, imag, rect, angle, abs, polar, color=CBTC1, box
-    ))
+      )
+    end)
