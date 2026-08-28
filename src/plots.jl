@@ -106,8 +106,12 @@ to ``\\frac{2\\pi}{3}``, cyan to ``\\pi``, blue to
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
-- **`aa`** toggles anti-aliasing. Quadruples computation time, but
-  reduces jaggedness of some edges.
+- **`aa`** controls anti-aliasing. Possible values are `true` (default),
+  `false`, `2`, and `4`. A single sample is used per pixel for `false`, two for
+  `2`, and four for `4`. When set to `true` an appropriate value is
+  automatically chosen (`2` when single threaded, `4` when multiple threads are
+  available, and `false` if there is reason to expect anti-aliassing to result
+  in an error).
 
 Remaining keyword arguments are passed to the plotting backend.
 """
@@ -194,8 +198,12 @@ If none of the below options are set, the plot defaults to `rect = true`.
 
 - **`hicontrast`** uses black and white instead of the softer defaults.
 
-- **`aa`** toggles anti-aliasing. Quadruples computation time, but
-  reduces jaggedness of some edges.
+- **`aa`** controls anti-aliasing. Possible values are `true` (default),
+  `false`, `2`, and `4`. A single sample is used per pixel for `false`, two for
+  `2`, and four for `4`. When set to `true` an appropriate value is
+  automatically chosen (`2` when single threaded, `4` when multiple threads are
+  available, and `false` if there is reason to expect anti-aliassing to result
+  in an error).
 
 Remaining keyword arguments are passed to the plotting backend.
 """
@@ -284,8 +292,12 @@ If none of the below options are set, the plot defaults to `rect = true`.
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
-- **`aa`** toggles anti-aliasing. Quadruples computation time, but
-  reduces jaggedness of some edges.
+- **`aa`** controls anti-aliasing. Possible values are `true` (default),
+  `false`, `2`, and `4`. A single sample is used per pixel for `false`, two for
+  `2`, and four for `4`. When set to `true` an appropriate value is
+  automatically chosen (`2` when single threaded, `4` when multiple threads are
+  available, and `false` if there is reason to expect anti-aliassing to result
+  in an error).
 
 Remaining keyword arguments are passed to the plotting backend.
 """
@@ -372,8 +384,12 @@ to ``\\pi``, and black to ``\\frac{3\\pi}{2}``.
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
-- **`aa`** toggles anti-aliasing. Quadruples computation time, but
-  reduces jaggedness of some edges.
+- **`aa`** controls anti-aliasing. Possible values are `true` (default),
+  `false`, `2`, and `4`. A single sample is used per pixel for `false`, two for
+  `2`, and four for `4`. When set to `true` an appropriate value is
+  automatically chosen (`2` when single threaded, `4` when multiple threads are
+  available, and `false` if there is reason to expect anti-aliassing to result
+  in an error).
 
 Remaining keyword arguments are passed to the plotting backend.
 """
@@ -458,8 +474,12 @@ Red corresponds to phase ``0``, white to ``\\frac{\\pi}{2}``, cyan to
   colored domain is defined by `f(w) == true`. Can also be a list of
   multiple boxes.
 
-- **`aa`** toggles anti-aliasing. Quadruples computation time, but
-  reduces jaggedness of some edges.
+- **`aa`** controls anti-aliasing. Possible values are `true` (default),
+  `false`, `2`, and `4`. A single sample is used per pixel for `false`, two for
+  `2`, and four for `4`. When set to `true` an appropriate value is
+  automatically chosen (`2` when single threaded, `4` when multiple threads are
+  available, and `false` if there is reason to expect anti-aliassing to result
+  in an error).
 
 Remaining keyword arguments are passed to the plotting backend.
 """
