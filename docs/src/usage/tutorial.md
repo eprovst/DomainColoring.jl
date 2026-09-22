@@ -22,7 +22,11 @@ In this tutorial we will use `CairoMakie` to provide output for the
 documentation, but whilst following along you might want to use
 `GLMakie` instead.
 
-To install `DomainColoring.jl` and either of these packages, enter
+The internal `DomainColoring.jl` code is fully parallelized and some quality
+parameters are set to a lower level for single threaded sessions. For the best
+results start Julia with `julia -tauto`.
+
+To install `DomainColoring.jl` and one of the Makie backends, enter
 ```
 ]add DomainColoring GLMakie
 ```
@@ -135,3 +139,7 @@ domaincolor(z -> im*z^3-1, 2.5, all=true)
 resize!(current_figure(), 620, 600) #hide
 current_figure() #hide
 ```
+
+(Do not worry if your output looks slightly different from this image. If
+vertical and horizontal grid lines look more pronounced, you ran this command in
+single threaded mode. We will see why in the [General Overview](@ref).)

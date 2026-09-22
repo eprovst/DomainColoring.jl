@@ -83,10 +83,60 @@ current_figure() # hide
 
 The argument interface contains many further options, but we will delay
 their discussion until after introducing the [`checkerplot`](@ref) and
-[`sawplot`](@ref) functions.
+[`sawplot`](@ref) functions. First, we will return to the artefacting you
+might have seen during the [Basic Tutorial](@ref).
+
+## Anti-aliassing
+Let us look at a slightly simpler cousin of the logo when we set `aa=false`,
+the meaning of which we will explain shortly:
+```@example
+using CairoMakie, DomainColoring #hide
+domaincolor(z -> im*z^2-1, (4, 2), all=true, aa=false)
+resize!(current_figure(), 620, 340) #hide
+current_figure() #hide
+```
+
+Notice that the edges of the magnitude and the grid lines display blocking
+artefacts. This is because, with `aa=false`, every pixel uses only a single
+evaluation of the complex function. When near an edge, the pixel thus displays
+either the one magnitude level or the other. The solution is fairly simple: use
+multiple samples per pixel and take the average, at the cost of more
+computations.
+
+`DomainColoring.jl` provides two levels of anti-aliassing, one that uses
+approximately two samples per pixel and one that uses four. To keep the package
+reasonably interactive, the default method depends on the number of available
+threads. In single threaded mode we default to the two sample option, else to
+four.
+
+These can also be selected explicitly by passing `aa=2` or `aa=4`, respectively,
+as seen below.
+```@example
+using CairoMakie, DomainColoring #hide
+domaincolor(z -> im*z^2-1, (4, 2), all=true, aa=2)
+resize!(current_figure(), 620, 340) #hide
+current_figure() #hide
+```
+```@example
+using CairoMakie, DomainColoring #hide
+domaincolor(z -> im*z^2-1, (4, 2), all=true, aa=4)
+resize!(current_figure(), 620, 340) #hide
+current_figure() #hide
+```
+
+Overall the two show almost identical quality, the one exception being near
+horizontal and vertical lines. This is because `aa=2` uses the FLIPQUAD scheme,
+where samples are shared between adjacent pixels. This way, like `aa=4`, four
+samples are averaged per pixel, but the number of actual evaluations is nearly
+halved. The downside is that grid lines that pass through these shared sample
+points are overaccentuated as they now darken two pixels. The more expensive
+`aa=4` uses four independent samples that all lie within the pixel, which avoids
+this artefact, at the cost of double the computation time.
+
+When producing plots for publication using a grid, it thus best to set `aa=4`
+and/or start Julia multithreaded.
 
 ## The [`checkerplot`](@ref) and [`sawplot`](@ref) functions
-
 A checker plot shows limited information and is useful to detect
 patterns in certain contexts. By default a checker board pattern is used
 with one stripe for an unit increase in either direction. A
@@ -164,21 +214,6 @@ using CairoMakie, DomainColoring # hide
 checkerplot(sin, (5, 2), polar=1.5)
 resize!(current_figure(), 620, 280) #hide
 current_figure() # hide
-```
-
-To better render these types of plots, with sharp edges or fine lines, all
-plotting commands use anti-aliassing by default. In this mode, the coloring
-function is evaluated at four slightly perturbed points for every pixel. This
-resolves more detail and reduces artefacts near edges, but significantly
-increases computation time. If you do not need or want anti-aliasing (for
-instance for figures with smoothly varying colors, like a phase only plot) you
-can turn this off using the `aa=false` option. Compare the following version to
-the one above (here anti-aliassing is clearly preferred).
-```@example
-using CairoMakie, DomainColoring # hide
-checkerplot(sin, (5, 2), polar=1.5, aa=false)
-resize!(current_figure(), 620, 280) #hide
-current_figure() #hide
 ```
 
 As mentioned before regions of the output plane can be colored using the

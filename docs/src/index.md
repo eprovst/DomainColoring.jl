@@ -14,11 +14,16 @@ In addition to the static plots provided here, interactive versions using
 `GLMakie`, and various 3D visualizations, are available as part of the 
 [`ComplexToys.jl` package](https://eprovst.github.io/ComplexToys.jl/).
 
-The plots implemented here are inspired by the wonderful book by Wegert[^1], yet
-using a smooth curve through Oklab space, yielding a more perceptually uniform
-representation of the phase (see [The Arenberg Phase Wheel](@ref)).
+Domain coloring was first proposed by Farris[^1] and later popularized by the
+wonderful book by Wegert[^2]. The plots in this package are mostly inspired by
+the designs in the latter, yet using a smooth curve through Oklab space,
+yielding a more perceptually uniform representation of the phase (see [The
+Arenberg Phase Wheel](@ref)).
 
 [^1]:
-    Elias Wegert, _Visual Complex Functions: An Introduction with Phase
-    Portraits_ (Basel, 2012).
+    Farris, F. A. (1998), review of T. Needham (1997), _Visual Complex Analysis_
+    (Oxford), in _The American Mathematical Monthly_, 105/6: 570–76.
+[^2]:
+    Wegert, E. (2012), _Visual Complex Functions: An Introduction with Phase
+    Portraits_ (Basel).
 

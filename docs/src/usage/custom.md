@@ -39,3 +39,19 @@ cgridplot(z -> im*z^3-1, 2.5)
 resize!(current_figure(), 620, 600) #hide
 current_figure() #hide
 ```
+
+Note that you get a warning that anti-aliasing is disabled. This is because
+`colorant"name"` returns an sRGB value with a single byte per channel instead of
+an actual float, which makes the anti-aliasing computations prone to rounding
+errors. Additionally, sRGB is a poor color space for interpolation. A better
+implementation might be:
+```julia
+function shader(w, realcol, imagcol)
+    r, i = reim(w)
+    white = Oklab(1.0, 0.0, 0.0)
+    realcol = convert(Oklab{Float64}, realcol)
+    imagcol = convert(Oklab{Float64}, imagcol)
+    c = weighted_color_mean(abs(sinpi(r))^.06, white, realcol)
+    weighted_color_mean(abs(sinpi(i))^.06, c, imagcol)
+end
+```

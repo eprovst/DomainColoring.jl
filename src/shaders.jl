@@ -404,7 +404,7 @@ end
 """
     DomainColoring.arenberg_cielab(θ; print = false)
 
-Superseded by the Oklab version: [arenberg](@ref).
+Superseded by the Oklab version: [`arenberg`](@ref).
 
 Maps a phase angle **`θ`** to a color in CIE L\\*a\\*b\\* space by
 taking
