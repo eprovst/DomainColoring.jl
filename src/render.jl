@@ -3,7 +3,7 @@
 using Colors
 using FunctionWrappers
 
-const ComplexFunction{T} = FunctionWrappers.FunctionWrapper{Complex{T}, Tuple{Complex{T}}}
+const ComplexFunction = FunctionWrappers.FunctionWrapper{ComplexF64, Tuple{ComplexF64}}
 
 # Implements the `limits` expansion typical of the functions in this
 # module, additionally normalizes to tuples.
@@ -54,7 +54,7 @@ function renderimage!(
     limits=(-1, 1, -1, 1);
     aa=true,
 ) where {C}
-    renderimage!(img, ComplexFunction{typeof(real(f(0.0)))}(f), shader, limits; aa)
+    renderimage!(img, ComplexFunction(f), shader, limits; aa)
 end
 
 function renderimage!(

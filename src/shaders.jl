@@ -2,6 +2,7 @@
 
 using ColorSchemes
 using Colors
+using FunctionWrappers
 
 """
     DomainColoring.arenberg(θ; print = false)
@@ -139,7 +140,7 @@ _color_angle(w, arg::Bool)::Oklab{Float64} = arg ? arenberg(angle(w)) : Oklab(.8
 
 _color_angle(w, ::Val{:print})::Oklab{Float64} = arenberg(angle(w); print=true)
 
-function _color_angle(w, arg::Function)::Oklab{Float64}
+function _color_angle(w, arg::F)::Oklab{Float64} where {F <: Function}
     θ = angle(w)
     arg(ifelse(θ < 0, θ + 2π, θ))
 end
@@ -226,7 +227,7 @@ _add_magnitude(w, c::Oklab, args::NamedTuple) = _add_magnitude(w, c; args...)
 
 _add_magnitude(w, c::Oklab, arg::Bool) = arg ? _add_magnitude(w, c) : c
 
-_add_magnitude(w, c::Oklab, arg::Function) = _add_magnitude(w, c; transform=arg)
+_add_magnitude(w, c::Oklab, arg::F) where {F <: Function} = _add_magnitude(w, c; transform=arg)
 
 _add_magnitude(w, c::Oklab, arg) = _add_magnitude(w, c; base=arg)
 
@@ -243,11 +244,21 @@ function _add_box(w, c, sqs)
 end
 
 # domain function
-function _add_box(w, c::C, (f, s)::Tuple{<:Function, <:Color}) where C <: Color
+const BoxFunction = FunctionWrappers.FunctionWrapper{Bool, Tuple{ComplexF64}}
+
+function _add_box(w, c::C, (f, s)::Tuple{BoxFunction, <:Color}) where C <: Color
     f(w) ? convert(C, s) : c
 end
 
-function _add_box(w, c::C, (f, s)::Tuple{<:Function, <:Any}) where C <: Color
+function _add_box(w, c::C, (f, s)::Tuple{BoxFunction, <:Any}) where C <: Color
+    _add_box(w, c, (f, parse(C, s)))
+end
+
+function _add_box(w, c::C, (f, s)::Tuple{F, <:Color}) where {C <: Color, F <: Function}
+    f(w) ? convert(C, s) : c
+end
+
+function _add_box(w, c::C, (f, s)::Tuple{F, <:Any}) where {C <: Color, F <: Function}
     _add_box(w, c, (f, parse(C, s)))
 end
 
@@ -271,8 +282,8 @@ function _preprocess_box(sqs)
         map(_preprocess_box, sqs)
     end
 end
-_preprocess_box((f, s)::Tuple{<:Function, <:Color}) = (f, convert(Oklab{Float64}, s))
-_preprocess_box((f, s)::Tuple{<:Function, <:Any}) = (f, parse(Oklab{Float64}, s))
+_preprocess_box((f, s)::Tuple{<:Function, <:Color}) = (BoxFunction(f), convert(Oklab{Float64}, s))
+_preprocess_box((f, s)::Tuple{<:Function, <:Any}) = (BoxFunction(f), parse(Oklab{Float64}, s))
 _preprocess_box((a, b, s)::Tuple{<:Number, <:Number, <:Color}) = (a, b, convert(Oklab{Float64}, s))
 _preprocess_box((a, b, s)::Tuple{<:Number, <:Number, <:Any}) = (a, b, parse(Oklab{Float64}, s))
 
